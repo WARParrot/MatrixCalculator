@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import numpy as np
 import os
+from localization import Language
 
 class MatrixWidget(ttk.Frame):
     MAX_ROWS = 20
@@ -24,26 +25,37 @@ class MatrixWidget(ttk.Frame):
         self.title_label = ttk.Label(self.control_frame, text=f"{title}: ")
         self.title_label.pack(side='left')
 
-        ttk.Label(self.control_frame, text="Rows:").pack(side='left')
+        # These labels will be updated dynamically
+        self.rows_label = ttk.Label(self.control_frame, text=Language.tr('rows'))
+        self.rows_label.pack(side='left')
         self.rows_var = tk.IntVar(value=rows)
         self.rows_spin = ttk.Spinbox(self.control_frame, from_=1, to=self.MAX_ROWS,
                                       textvariable=self.rows_var, width=5)
         self.rows_spin.pack(side='left', padx=2)
 
-        ttk.Label(self.control_frame, text="Cols:").pack(side='left')
+        self.cols_label = ttk.Label(self.control_frame, text=Language.tr('cols'))
+        self.cols_label.pack(side='left')
         self.cols_var = tk.IntVar(value=cols)
         self.cols_spin = ttk.Spinbox(self.control_frame, from_=1, to=self.MAX_COLS,
                                       textvariable=self.cols_var, width=5)
         self.cols_spin.pack(side='left', padx=2)
 
-        ttk.Button(self.control_frame, text="Resize",
-                   command=self._resize_from_spin).pack(side='left', padx=5)
+        self.resize_btn = ttk.Button(self.control_frame, text=Language.tr('resize'),
+                                      command=self._resize_from_spin)
+        self.resize_btn.pack(side='left', padx=5)
 
         # Grid frame
         self.grid_frame = ttk.Frame(self)
         self.grid_frame.pack(fill='both', expand=True, padx=5, pady=5)
 
         self._create_grid()
+
+    def update_language(self):
+        """Update all translatable texts in this widget."""
+        self.title_label.config(text=f"{self.title_text}: ")
+        self.rows_label.config(text=Language.tr('rows'))
+        self.cols_label.config(text=Language.tr('cols'))
+        self.resize_btn.config(text=Language.tr('resize'))
 
     def set_title(self, title):
         self.title_text = title
@@ -265,7 +277,10 @@ class StepViewer(ttk.Frame):
         self.text.insert(tk.END, text + '\n', 'header')
 
     def add_step(self, number, description):
-        self.text.insert(tk.END, f"\nШаг {number}: {description}\n", 'step')
+        """Add a step with localized prefix."""
+        prefix = Language.tr('step_prefix', number=number)
+        self.text.insert(tk.END, f"\n{prefix} {description}\n", 'step')
+        self.scroll_to_bottom()
 
     def add_matrix(self, matrix, title=""):
         if title:
