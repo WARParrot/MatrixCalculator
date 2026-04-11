@@ -950,3 +950,99 @@ class GeometryPanel(ttk.Frame):
         self.step_viewer.clear()
         self.step_viewer.add_header(Language.tr('tetrahedron_volume'))
         self.step_viewer.add_result(f"{vol:.6f}")
+
+
+class EigenPanel(ttk.Frame):
+    """Panel for eigenvalues, eigenvectors, and diagonalization."""
+    def __init__(self, parent, engine, step_viewer, matrix_widget_getter):
+        super().__init__(parent)
+        self.engine = engine
+        self.step_viewer = step_viewer
+        self.get_matrix = matrix_widget_getter  # function that returns current matrix data
+
+        # Matrix input section
+        input_frame = ttk.LabelFrame(self, text=Language.tr('input_matrix'))
+        input_frame.pack(fill='both', expand=True, padx=5, pady=5)
+
+        # Use a MatrixWidget inside for convenience
+        self.matrix_widget = MatrixWidget(input_frame, title=Language.tr('matrix_a'), rows=3, cols=3)
+        self.matrix_widget.pack(fill='both', expand=True, padx=5, pady=5)
+
+        # Buttons
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(fill='x', padx=5, pady=5)
+
+        ttk.Button(btn_frame, text=Language.tr('btn_charpoly'),
+                   command=self._compute_charpoly).pack(side='left', padx=2)
+        ttk.Button(btn_frame, text=Language.tr('btn_eigenvalues'),
+                   command=self._compute_eigenvalues).pack(side='left', padx=2)
+        ttk.Button(btn_frame, text=Language.tr('btn_eigenvectors'),
+                   command=self._compute_eigenvectors).pack(side='left', padx=2)
+        ttk.Button(btn_frame, text=Language.tr('btn_diagonalize'),
+                   command=self._diagonalize).pack(side='left', padx=2)
+
+        # Copy from main matrix A button
+        ttk.Button(btn_frame, text=Language.tr('btn_copy_from_a'),
+                   command=self._copy_from_a).pack(side='left', padx=10)
+
+        self.show_steps_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(self, text=Language.tr('show_steps'),
+                        variable=self.show_steps_var).pack(anchor='w', padx=5)
+
+    def _get_matrix_data(self):
+        return self.matrix_widget.get_matrix_data(symbolic=self.engine.get_symbolic_mode())
+
+    def _copy_from_a(self):
+        matrix = self.get_matrix()
+        if matrix is not None:
+            self.matrix_widget.set_matrix_data(matrix, symbolic=self.engine.get_symbolic_mode())
+
+    def _compute_charpoly(self):
+        A = self._get_matrix_data()
+        try:
+            poly, steps = self.engine.characteristic_polynomial(
+                A, show_steps=self.show_steps_var.get())
+            self._show_result(poly, steps, Language.tr('charpoly_result'))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _compute_eigenvalues(self):
+        A = self._get_matrix_data()
+        try:
+            vals, steps = self.engine.eigenvalues(A, show_steps=self.show_steps_var.get())
+            self._show_result(vals, steps, Language.tr('eigenvalues_result'))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _compute_eigenvectors(self):
+        A = self._get_matrix_data()
+        try:
+            vecs, steps = self.engine.eigenvectors(A, show_steps=self.show_steps_var.get())
+            self._show_result(vecs, steps, Language.tr('eigenvectors_result'))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _diagonalize(self):
+        A = self._get_matrix_data()
+        try:
+            (P, D), steps = self.engine.diagonalize(A, show_steps=self.show_steps_var.get())
+            self._show_result((P, D), steps, Language.tr('diagonalization_result'))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _show_result(self, result, steps, title):
+        self.step_viewer.clear()
+        self.step_viewer.add_header(title)
+        if steps:
+            for step in steps:
+                self.step_viewer.add_step(step['step'] + 1, step['desc'])
+                if step.get('state') is not None:
+                    self.step_viewer.add_matrix(step['state'], title=Language.tr('state'))
+        if isinstance(result, tuple) and len(result) == 2:  # (P, D)
+            P, D = result
+            self.step_viewer.add_matrix(P, title="P (eigenvectors)")
+            self.step_viewer.add_matrix(D, title="D (eigenvalues)")
+        elif isinstance(result, (list, np.ndarray, sp.Matrix)):
+            self.step_viewer.add_matrix(result)
+        else:
+            self.step_viewer.add_result(str(result))

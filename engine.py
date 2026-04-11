@@ -904,9 +904,9 @@ class MatrixEngine:
             # Transition: coordinates in new = P * coordinates in old
             P = M_new.inv() * M_old
             if show_steps:
-                steps = [{'step': 0, 'desc': Language.tr('step_transition_init'), 'state': None}]
-                steps.append({'step': 1, 'desc': Language.tr('step_transition_formula'), 'state': None})
-                steps.append({'step': 2, 'desc': Language.tr('step_transition_matrix', matrix=str(P)), 'state': P})
+                steps = [{'step': 0, 'desc': Language.tr('step_transition_init'), 'state': None},
+                         {'step': 1, 'desc': Language.tr('step_transition_formula'), 'state': None},
+                         {'step': 2, 'desc': Language.tr('step_transition_matrix', matrix=str(P)), 'state': P}]
                 return P, steps
             return P, None
         else:
@@ -914,9 +914,9 @@ class MatrixEngine:
             M_new = np.column_stack(new)
             P = np.linalg.solve(M_new, M_old)
             if show_steps:
-                steps = [{'step': 0, 'desc': Language.tr('step_transition_init'), 'state': None}]
-                steps.append({'step': 1, 'desc': Language.tr('step_transition_formula'), 'state': None})
-                steps.append({'step': 2, 'desc': Language.tr('step_transition_matrix', matrix=str(P)), 'state': P})
+                steps = [{'step': 0, 'desc': Language.tr('step_transition_init'), 'state': None},
+                         {'step': 1, 'desc': Language.tr('step_transition_formula'), 'state': None},
+                         {'step': 2, 'desc': Language.tr('step_transition_matrix', matrix=str(P)), 'state': P}]
                 return P, steps
             return P, None
 
@@ -967,6 +967,139 @@ class MatrixEngine:
     def tetrahedron_volume_vectors(self, v1, v2, v3):
         """Volume from three edge vectors from one vertex."""
         return abs(np.dot(v1, np.cross(v2, v3))) / 6.0
+
+    def characteristic_polynomial(self, A, var='λ', show_steps=False):
+        """
+        Return the characteristic polynomial det(A - λI).
+        If symbolic mode, returns SymPy expression; else returns polynomial coefficients.
+        """
+        if self._symbolic_mode:
+            A = sp.Matrix(A)
+            λ = sp.Symbol(var)
+            n = A.rows
+            char_poly = (A - λ * sp.eye(n)).det()
+            if show_steps:
+                steps = [{'step': 0, 'desc': Language.tr('step_charpoly_init', var=var), 'state': None},
+                         {'step': 1, 'desc': Language.tr('step_charpoly_matrix',
+                                                         matrix=str(A - λ * sp.eye(n))),
+                          'state': A - λ * sp.eye(n)}, {'step': 2, 'desc': Language.tr('step_charpoly_det',
+                                                                                       poly=str(char_poly)),
+                                                        'state': None}]
+                return char_poly, steps
+            return char_poly, None
+        else:
+            A = np.array(A, dtype=self._current_dtype)
+            n = A.shape[0]
+            if show_steps:
+                steps = [{'step': 0, 'desc': Language.tr('step_charpoly_init', var=var), 'state': None},
+                         {'step': 1, 'desc': Language.tr('step_charpoly_matrix_numeric',
+                                                         matrix=str(A)), 'state': A}]
+                coeffs = np.poly(A)
+                steps.append({'step': 2, 'desc': Language.tr('step_charpoly_coeffs',
+                                                             coeffs=str(coeffs)), 'state': None})
+                return coeffs, steps
+            return np.poly(A), None
+
+    def eigenvalues(self, A, show_steps=False):
+        """Return eigenvalues of matrix A."""
+        if self._symbolic_mode:
+            A = sp.Matrix(A)
+            eigen = A.eigenvals()
+            if show_steps:
+                steps = [{'step': 0, 'desc': Language.tr('step_eigenvals_init'), 'state': None}]
+                char_poly = self.characteristic_polynomial(A, show_steps=False)[0]
+                steps.append({'step': 1, 'desc': Language.tr('step_eigenvals_charpoly',
+                                                             poly=str(char_poly)), 'state': None})
+                steps.append({'step': 2, 'desc': Language.tr('step_eigenvals_roots',
+                                                             vals=str(eigen)), 'state': None})
+                return eigen, steps
+            return eigen, None
+        else:
+            A = np.array(A, dtype=self._current_dtype)
+            vals = np.linalg.eigvals(A)
+            if show_steps:
+                steps = [{'step': 0, 'desc': Language.tr('step_eigenvals_init'), 'state': None}]
+                coeffs = np.poly(A)
+                steps.append({'step': 1, 'desc': Language.tr('step_eigenvals_charpoly_numeric',
+                                                             coeffs=str(coeffs)), 'state': None})
+                steps.append({'step': 2, 'desc': Language.tr('step_eigenvals_result',
+                                                             vals=str(vals)), 'state': None})
+                return vals, steps
+            return vals, None
+
+    def eigenvectors(self, A, show_steps=False):
+        """Return eigenvalues and eigenvectors. For symbolic, returns list of (eigenval, mult, [eigenvecs])."""
+        if self._symbolic_mode:
+            A = sp.Matrix(A)
+            eigenvects = A.eigenvects()
+            if show_steps:
+                steps = [{'step': 0, 'desc': Language.tr('step_eigenvecs_init'), 'state': None}]
+                char_poly = self.characteristic_polynomial(A, show_steps=False)[0]
+                steps.append({'step': 1, 'desc': Language.tr('step_eigenvecs_charpoly',
+                                                             poly=str(char_poly)), 'state': None})
+                # Show each eigenvalue and its eigenvectors
+                step_num = 2
+                for val, mult, vecs in eigenvects:
+                    steps.append({'step': step_num, 'desc': Language.tr('step_eigenvecs_for_val',
+                                                                        val=str(val), mult=mult), 'state': None})
+                    step_num += 1
+                    for i, vec in enumerate(vecs):
+                        steps.append({'step': step_num, 'desc': Language.tr('step_eigenvecs_vec',
+                                                                            idx=i + 1, vec=self._format_vector(vec)),
+                                      'state': vec})
+                        step_num += 1
+                return eigenvects, steps
+            return eigenvects, None
+        else:
+            A = np.array(A, dtype=self._current_dtype)
+            vals, vecs = np.linalg.eig(A)
+            if show_steps:
+                steps = [{'step': 0, 'desc': Language.tr('step_eigenvecs_init'), 'state': None},
+                         {'step': 1, 'desc': Language.tr('step_eigenvecs_vals',
+                                                         vals=str(vals)), 'state': None},
+                         {'step': 2, 'desc': Language.tr('step_eigenvecs_matrix',
+                                                         matrix=str(vecs)), 'state': vecs}]
+                return (vals, vecs), steps
+            return (vals, vecs), None
+
+    def diagonalize(self, A, show_steps=False):
+        """
+        Attempt to diagonalize matrix A.
+        Returns (P, D) such that A = P * D * P^{-1}, or raises error if not diagonalizable.
+        """
+        if self._symbolic_mode:
+            A = sp.Matrix(A)
+            if not A.is_diagonalizable():
+                raise ValueError(Language.tr('err_not_diagonalizable'))
+            P, D = A.diagonalize()
+            if show_steps:
+                steps = [{'step': 0, 'desc': Language.tr('step_diag_init'), 'state': None},
+                         {'step': 1, 'desc': Language.tr('step_diag_eigenvals',
+                                                         vals=str(D.diagonal())), 'state': D},
+                         {'step': 2, 'desc': Language.tr('step_diag_eigenvecs',
+                                                         matrix=str(P)), 'state': P},
+                         {'step': 3, 'desc': Language.tr('step_diag_verify',
+                                                         product=str(P * D * P.inv())), 'state': None}]
+                return (P, D), steps
+            return (P, D), None
+        else:
+            A = np.array(A, dtype=self._current_dtype)
+            vals, vecs = np.linalg.eig(A)
+            # Check if diagonalizable (all eigenvectors independent)
+            if np.linalg.matrix_rank(vecs) < A.shape[0]:
+                raise ValueError(Language.tr('err_not_diagonalizable'))
+            D = np.diag(vals)
+            P = vecs
+            if show_steps:
+                steps = [{'step': 0, 'desc': Language.tr('step_diag_init'), 'state': None},
+                         {'step': 1, 'desc': Language.tr('step_diag_eigenvals_numeric',
+                                                         vals=str(vals)), 'state': D},
+                         {'step': 2, 'desc': Language.tr('step_diag_eigenvecs_numeric',
+                                                         matrix=str(P)), 'state': P},
+                         {'step': 3, 'desc': Language.tr('step_diag_verify_numeric',
+                                                         product=str(P @ D @ np.linalg.inv(P))), 'state': None}]
+                return (P, D), steps
+            return (P, D), None
 
     def stats(self):
         return {

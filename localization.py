@@ -258,6 +258,48 @@ TRANSLATIONS = {
         'special_tab': 'Специальные отношения',
         'basis_tab': 'Базис и разложение',
         'geometry_tab': 'Геометрия',
+
+        # Eigenvalues
+        'eigen_tab': 'Собственные значения',
+        'input_matrix': 'Матрица',
+        'btn_charpoly': 'Характеристический полином',
+        'btn_eigenvalues': 'Собственные значения',
+        'btn_eigenvectors': 'Собственные векторы',
+        'btn_diagonalize': 'Диагонализация',
+        'btn_copy_from_a': '← Копировать из A',
+        'charpoly_result': 'Характеристический полином',
+        'eigenvalues_result': 'Собственные значения',
+        'eigenvectors_result': 'Собственные векторы',
+        'diagonalization_result': 'Диагонализация',
+        'err_not_diagonalizable': 'Матрица не диагонализируема',
+
+        # Step descriptions
+        'step_charpoly_init': 'Построение характеристического полинома det(A - {var}I)',
+        'step_charpoly_matrix': 'Матрица A - {var}I:\n{matrix}',
+        'step_charpoly_det': 'Определитель = {poly}',
+        'step_charpoly_matrix_numeric': 'Матрица A:\n{matrix}',
+        'step_charpoly_coeffs': 'Коэффициенты характеристического полинома: {coeffs}',
+
+        'step_eigenvals_init': 'Поиск собственных значений',
+        'step_eigenvals_charpoly': 'Характеристический полином: {poly}',
+        'step_eigenvals_roots': 'Корни (собственные значения): {vals}',
+        'step_eigenvals_charpoly_numeric': 'Коэффициенты: {coeffs}',
+        'step_eigenvals_result': 'Собственные значения: {vals}',
+
+        'step_eigenvecs_init': 'Поиск собственных векторов',
+        'step_eigenvecs_charpoly': 'Характеристический полином: {poly}',
+        'step_eigenvecs_for_val': 'Для λ = {val} (кратность {mult}):',
+        'step_eigenvecs_vec': '  Вектор {idx}: {vec}',
+        'step_eigenvecs_vals': 'Собственные значения: {vals}',
+        'step_eigenvecs_matrix': 'Матрица собственных векторов (по столбцам):\n{matrix}',
+
+        'step_diag_init': 'Диагонализация матрицы',
+        'step_diag_eigenvals': 'Собственные значения (диагональ D):\n{vals}',
+        'step_diag_eigenvecs': 'Матрица P (собственные векторы):\n{matrix}',
+        'step_diag_verify': 'Проверка: P·D·P⁻¹ = {product}',
+        'step_diag_eigenvals_numeric': 'Собственные значения: {vals}',
+        'step_diag_eigenvecs_numeric': 'Матрица P:\n{matrix}',
+        'step_diag_verify_numeric': 'Проверка: P·D·P⁻¹ =\n{product}',
     },
     'en': {
         # Application
@@ -515,6 +557,47 @@ TRANSLATIONS = {
         'special_tab': 'Special Relations',
         'basis_tab': 'Basis and decomposition',
         'geometry_tab': 'Geometry',
+
+        # Eigenvalues
+        'eigen_tab': 'Eigenvalues',
+        'input_matrix': 'Matrix',
+        'btn_charpoly': 'Characteristic Polynomial',
+        'btn_eigenvalues': 'Eigenvalues',
+        'btn_eigenvectors': 'Eigenvectors',
+        'btn_diagonalize': 'Diagonalize',
+        'btn_copy_from_a': '← Copy from A',
+        'charpoly_result': 'Characteristic Polynomial',
+        'eigenvalues_result': 'Eigenvalues',
+        'eigenvectors_result': 'Eigenvectors',
+        'diagonalization_result': 'Diagonalization',
+        'err_not_diagonalizable': 'Matrix is not diagonalizable',
+
+        'step_charpoly_init': 'Build characteristic polynomial det(A - {var}I)',
+        'step_charpoly_matrix': 'Matrix A - {var}I:\n{matrix}',
+        'step_charpoly_det': 'Determinant = {poly}',
+        'step_charpoly_matrix_numeric': 'Matrix A:\n{matrix}',
+        'step_charpoly_coeffs': 'Characteristic polynomial coefficients: {coeffs}',
+
+        'step_eigenvals_init': 'Find eigenvalues',
+        'step_eigenvals_charpoly': 'Characteristic polynomial: {poly}',
+        'step_eigenvals_roots': 'Roots (eigenvalues): {vals}',
+        'step_eigenvals_charpoly_numeric': 'Coefficients: {coeffs}',
+        'step_eigenvals_result': 'Eigenvalues: {vals}',
+
+        'step_eigenvecs_init': 'Find eigenvectors',
+        'step_eigenvecs_charpoly': 'Characteristic polynomial: {poly}',
+        'step_eigenvecs_for_val': 'For λ = {val} (multiplicity {mult}):',
+        'step_eigenvecs_vec': '  Vector {idx}: {vec}',
+        'step_eigenvecs_vals': 'Eigenvalues: {vals}',
+        'step_eigenvecs_matrix': 'Eigenvector matrix (columns):\n{matrix}',
+
+        'step_diag_init': 'Diagonalize matrix',
+        'step_diag_eigenvals': 'Eigenvalues (diagonal D):\n{vals}',
+        'step_diag_eigenvecs': 'Matrix P (eigenvectors):\n{matrix}',
+        'step_diag_verify': 'Verification: P·D·P⁻¹ = {product}',
+        'step_diag_eigenvals_numeric': 'Eigenvalues: {vals}',
+        'step_diag_eigenvecs_numeric': 'Matrix P:\n{matrix}',
+        'step_diag_verify_numeric': 'Verification: P·D·P⁻¹ =\n{product}',
     }
 }
 

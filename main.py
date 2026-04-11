@@ -9,7 +9,8 @@ import logging
 from engine import MatrixEngine
 from ui.widgets import (
     MatrixWidget, StepViewer, VectorOperationsPanel,
-    SpecialRelationsPanel, BasisPanel, GeometryPanel
+    SpecialRelationsPanel, BasisPanel, GeometryPanel,
+    EigenPanel
 )
 from localization import Language
 import config
@@ -189,6 +190,11 @@ class MatrixCalculatorApp:
         self.geometry_tab = GeometryPanel(self.notebook, self.engine, self.step_viewer)
         self.notebook.add(self.geometry_tab, text=Language.tr('geometry_tab'))
 
+        # ----- Eigenvalues Tab -----
+        self.eigen_tab = EigenPanel(self.notebook, self.engine, self.step_viewer,
+                                    lambda: self.matrix_a.get_matrix_data(symbolic=self.engine.get_symbolic_mode()))
+        self.notebook.add(self.eigen_tab, text=Language.tr('eigen_tab'))
+
     def _create_status_bar(self):
         status_frame = ttk.Frame(self.root)
         status_frame.pack(fill="x", padx=10, pady=2)
@@ -251,6 +257,8 @@ class MatrixCalculatorApp:
         self.notebook.tab(self.special_tab, text=Language.tr('special_tab'))
         self.notebook.tab(self.basis_tab, text=Language.tr('basis_tab'))
         self.notebook.tab(self.geometry_tab, text=Language.tr('geometry_tab'))
+
+        self.notebook.tab(self.eigen_tab, text=Language.tr('eigen_tab'))
 
     def _update_slau_ui(self):
         op_display = self.operation_var.get()
