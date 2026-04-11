@@ -6,12 +6,13 @@ import time
 import psutil
 import logging
 from engine import MatrixEngine
-from ui.widgets import MatrixWidget, StepViewer
+from ui.widgets import MatrixWidget, StepViewer, VectorOperationsPanel
 from localization import Language
 import config
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger('MatrixCalc')
+
 
 class MatrixCalculatorApp:
     def __init__(self):
@@ -132,23 +133,11 @@ class MatrixCalculatorApp:
         self.toolbar = toolbar
 
     def _create_main_area(self):
+        """Create main area with notebook for Matrix and Vector tabs."""
         main_paned = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
         main_paned.pack(fill="both", expand=True, padx=5, pady=5)
 
-        # Left side: matrices
-        self.left_frame = ttk.Frame(main_paned)
-        main_paned.add(self.left_frame, weight=1)
-
-        self.matrix_a = MatrixWidget(self.left_frame, Language.tr('matrix_a'), rows=3, cols=3)
-        self.matrix_a.pack(fill="both", expand=True, padx=5, pady=5)
-
-        self.slau_separator = ttk.Separator(self.left_frame, orient='vertical')
-        # Not packed initially
-
-        self.matrix_b = MatrixWidget(self.left_frame, Language.tr('matrix_b'), rows=3, cols=3)
-        self.matrix_b.pack(fill="both", expand=True, padx=5, pady=5)
-
-        # Right side: step viewer
+        # ---- Right side: step viewer (created first so it's available) ----
         right_frame = ttk.Frame(main_paned)
         main_paned.add(right_frame, weight=1)
 
@@ -158,6 +147,29 @@ class MatrixCalculatorApp:
 
         self.step_viewer = StepViewer(right_frame)
         self.step_viewer.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # ---- Left side: notebook for matrix/vector operations ----
+        self.left_frame = ttk.Frame(main_paned)
+        main_paned.add(self.left_frame, weight=1)
+
+        self.notebook = ttk.Notebook(self.left_frame)
+        self.notebook.pack(fill="both", expand=True)
+
+        # ----- Matrix tab -----
+        self.matrix_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.matrix_tab, text=Language.tr('matrix_tab'))
+
+        self.matrix_a = MatrixWidget(self.matrix_tab, Language.tr('matrix_a'), rows=3, cols=3)
+        self.matrix_a.pack(fill="both", expand=True, padx=5, pady=5)
+
+        self.slau_separator = ttk.Separator(self.matrix_tab, orient='vertical')
+
+        self.matrix_b = MatrixWidget(self.matrix_tab, Language.tr('matrix_b'), rows=3, cols=3)
+        self.matrix_b.pack(fill="both", expand=True, padx=5, pady=5)
+
+        # ----- Vector tab -----
+        self.vector_tab = VectorOperationsPanel(self.notebook, self.engine, self.step_viewer)
+        self.notebook.add(self.vector_tab, text=Language.tr('vector_tab'))
 
     def _create_status_bar(self):
         status_frame = ttk.Frame(self.root)
@@ -175,8 +187,15 @@ class MatrixCalculatorApp:
         self._refresh_ui_language()
 
     def _refresh_ui_language(self):
-        """Update all UI texts after language change by rebuilding menus and refreshing other elements."""
-        # Find current operation ID (if any) to preserve selection
+        """Update all UI texts after language change."""
+        # Update notebook tabs
+        self.notebook.tab(self.matrix_tab, text=Language.tr('matrix_tab'))
+        self.notebook.tab(self.vector_tab, text=Language.tr('vector_tab'))
+
+        # Update vector tab's internal language
+        self.vector_tab.update_language()
+
+        # Existing matrix language updates
         current_op_display = self.operation_var.get()
         current_op_id = None
         for op_id, (method, num, scalar) in self.op_config.items():
@@ -184,28 +203,20 @@ class MatrixCalculatorApp:
                 current_op_id = op_id
                 break
 
-        # Update window title
         self.root.title(Language.tr('app_title'))
-
-        # --- Rebuild menus ---
-        # Delete all existing menu entries
         self.menubar.delete(0, 'end')
-        # Recreate menus (this also recreates self.file_menu and self.help_menu)
         self._create_menus()
 
-        # --- Update operation combobox ---
         self._build_operations_dict()
         self.op_combo['values'] = list(self.operations.keys())
-        # Restore previous operation if possible
         if current_op_id and Language.tr(f'op_{current_op_id}') in self.operations:
             self.operation_var.set(Language.tr(f'op_{current_op_id}'))
         elif self.operations:
             self.operation_var.set(list(self.operations.keys())[0])
         else:
             self.operation_var.set('')
-        self._on_operation_change()  # updates scalar state and SLAE UI
+        self._on_operation_change()
 
-        # --- Update toolbar labels (static labels and buttons) ---
         self.op_label.config(text=Language.tr('operation'))
         self.scalar_label.config(text=Language.tr('scalar'))
         self.compute_btn.config(text=Language.tr('compute'))
@@ -214,37 +225,17 @@ class MatrixCalculatorApp:
         self.prec_label.config(text=Language.tr('precision'))
         self.lang_label.config(text=Language.tr('language'))
 
-        # --- Update matrix widgets ---
         self.matrix_a.update_language()
         self.matrix_b.update_language()
-        # Update titles (they may have been changed for SLAE)
         self._update_slau_ui()
-
-        # --- Update step viewer header ---
         self.step_header.config(text=Language.tr('step_solution'))
 
-        # --- Update status bar (if in ready state) ---
         current_status = self.status_var.get()
         if current_status not in ('Вычисление...', 'Computing...', 'Отмена...', 'Canceling...'):
             self.status_var.set(Language.tr('ready'))
 
-    def _on_operation_change(self, event=None):
-        op_display = self.operation_var.get()
-        if op_display not in self.operations:
-            return
-        _, num_matrices, needs_scalar = self.operations[op_display]
-
-        # Scalar entry state
-        self.scalar_entry.config(state='normal' if needs_scalar else 'disabled')
-
-        # Matrix B state
-        self.matrix_b.set_state('normal' if num_matrices == 2 else 'disabled')
-
-        # SLAE UI
-        self._update_slau_ui()
-
     def _update_slau_ui(self):
-        """Show/hide vertical separator and adjust titles for SLAE."""
+        """Show/hide vertical separator and adjust titles for SLAE (matrix tab only)."""
         op_display = self.operation_var.get()
         if op_display == Language.tr('op_solve'):
             if not self.slau_separator.winfo_ismapped():
@@ -265,6 +256,16 @@ class MatrixCalculatorApp:
             self.status_var.set(Language.tr('precision_set', prec.value))
         except ValueError:
             pass
+
+    def _on_operation_change(self, event=None):
+        op_display = self.operation_var.get()
+        if op_display not in self.operations:
+            return
+        _, num_matrices, needs_scalar = self.operations[op_display]
+
+        self.scalar_entry.config(state='normal' if needs_scalar else 'disabled')
+        self.matrix_b.set_state('normal' if num_matrices == 2 else 'disabled')
+        self._update_slau_ui()
 
     def _swap_matrices(self):
         try:
@@ -353,10 +354,9 @@ class MatrixCalculatorApp:
 
             scalar = float(self.scalar_var.get()) if needs_scalar else 1.0
 
-            # Build argument list
             if num_matrices == 1:
                 args = [A, scalar] if needs_scalar else [A]
-            else:  # num_matrices == 2
+            else:
                 args = [A, B]
                 if needs_scalar:
                     args.append(scalar)
@@ -381,6 +381,7 @@ class MatrixCalculatorApp:
         self.step_viewer.add_header(f"{Language.tr('operation')} {op_name}")
         if steps:
             for step in steps:
+                # step numbers are 0-based in engine; display 1-based
                 self.step_viewer.add_step(step['step'] + 1, step['desc'])
                 if 'state' in step and step['state'] is not None:
                     self.step_viewer.add_matrix(step['state'], Language.tr('state'))
