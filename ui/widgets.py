@@ -1,12 +1,10 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import numpy as np
+import sympy as sp
 from localization import Language
 
 
-# ----------------------------------------------------------------------
-# MatrixWidget (with proper signature)
-# ----------------------------------------------------------------------
 class MatrixWidget(ttk.Frame):
     MAX_ROWS = 20
     MAX_COLS = 20
@@ -21,7 +19,6 @@ class MatrixWidget(ttk.Frame):
         self.widgets = {}
         self.active_key = None
 
-        # Control frame
         self.control_frame = ttk.Frame(self)
         self.control_frame.pack(fill='x', padx=5, pady=5)
 
@@ -46,7 +43,6 @@ class MatrixWidget(ttk.Frame):
                                       command=self._resize_from_spin)
         self.resize_btn.pack(side='left', padx=5)
 
-        # Grid frame
         self.grid_frame = ttk.Frame(self)
         self.grid_frame.pack(fill='both', expand=True, padx=5, pady=5)
 
@@ -150,23 +146,26 @@ class MatrixWidget(ttk.Frame):
         if self.widgets:
             self.widgets[(0, 0)].focus_set()
 
-    def get_matrix_data(self):
+    def get_matrix_data(self, symbolic=False):
         result = []
         for r in range(self.rows):
             row = []
             for c in range(self.cols):
                 val_str = self.widgets[(r, c)].get().strip()
-                if val_str == "":
-                    row.append(0.0)
+                if symbolic:
+                    row.append(val_str if val_str != "" else "0")
                 else:
-                    try:
-                        row.append(float(val_str))
-                    except ValueError:
-                        row.append(float('nan'))
+                    if val_str == "":
+                        row.append(0.0)
+                    else:
+                        try:
+                            row.append(float(val_str))
+                        except ValueError:
+                            row.append(val_str)
             result.append(row)
         return result
 
-    def set_matrix_data(self, matrix):
+    def set_matrix_data(self, matrix, symbolic=False):
         matrix = np.asarray(matrix)
         if matrix.ndim == 1:
             matrix = matrix.reshape(-1, 1)
@@ -177,10 +176,13 @@ class MatrixWidget(ttk.Frame):
         for r in range(rows):
             for c in range(cols):
                 val = matrix[r, c]
-                if isinstance(val, float) and val.is_integer():
-                    text = str(int(val))
-                else:
+                if symbolic and isinstance(val, (sp.Expr, sp.Number)):
                     text = str(val)
+                else:
+                    if isinstance(val, float) and val.is_integer():
+                        text = str(int(val))
+                    else:
+                        text = str(val)
                 self.widgets[(r, c)].delete(0, tk.END)
                 self.widgets[(r, c)].insert(0, text)
 
@@ -240,9 +242,6 @@ class MatrixWidget(ttk.Frame):
             return False
 
 
-# ----------------------------------------------------------------------
-# StepViewer (unchanged)
-# ----------------------------------------------------------------------
 class StepViewer(ttk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
@@ -277,7 +276,14 @@ class StepViewer(ttk.Frame):
     def add_matrix(self, matrix, title=""):
         if title:
             self.text.insert(tk.END, f"{title}:\n", 'step')
-        if isinstance(matrix, np.ndarray):
+        if isinstance(matrix, sp.Matrix):
+            lines = []
+            for i in range(matrix.rows):
+                row = matrix.row(i)
+                line = f"  {i+1}: " + " ".join(str(x) for x in row)
+                lines.append(line)
+            self.text.insert(tk.END, "\n".join(lines) + "\n", 'matrix')
+        elif isinstance(matrix, np.ndarray):
             if matrix.ndim == 0:
                 val = matrix.item()
                 self.text.insert(tk.END, f"  {val:.6g}\n", 'matrix')
@@ -287,7 +293,7 @@ class StepViewer(ttk.Frame):
             else:
                 lines = []
                 for i, row in enumerate(matrix):
-                    line = f"  {i + 1}: " + " ".join(f"{x:8.4f}" for x in row)
+                    line = f"  {i+1}: " + " ".join(f"{x:8.4f}" for x in row)
                     lines.append(line)
                 self.text.insert(tk.END, "\n".join(lines) + "\n", 'matrix')
         else:
@@ -303,9 +309,6 @@ class StepViewer(ttk.Frame):
         self.text.see(tk.END)
 
 
-# ----------------------------------------------------------------------
-# VectorWidget (with load/save and proper expansion)
-# ----------------------------------------------------------------------
 class VectorWidget(ttk.Frame):
     MAX_SIZE = 20
 
@@ -317,7 +320,6 @@ class VectorWidget(ttk.Frame):
         self.widgets = []
         self.active_index = None
 
-        # Control frame
         self.control_frame = ttk.Frame(self)
         self.control_frame.pack(fill='x', padx=5, pady=5)
 
@@ -342,7 +344,6 @@ class VectorWidget(ttk.Frame):
                                    command=self._save_vector)
         self.save_btn.pack(side='right', padx=2)
 
-        # Scrollable area for entries
         self.canvas = tk.Canvas(self, highlightthickness=0)
         self.scrollbar = ttk.Scrollbar(self, orient='vertical', command=self.canvas.yview)
         self.scrollable_frame = ttk.Frame(self.canvas)
@@ -427,28 +428,36 @@ class VectorWidget(ttk.Frame):
         if self.widgets:
             self.widgets[0].focus_set()
 
-    def get_vector_data(self):
+    def get_vector_data(self, symbolic=False):
         result = []
         for entry in self.widgets:
             val_str = entry.get().strip()
-            if val_str == "":
-                result.append(0.0)
+            if symbolic:
+                result.append(val_str if val_str != "" else "0")
             else:
-                try:
-                    result.append(float(val_str))
-                except ValueError:
-                    result.append(float('nan'))
+                if val_str == "":
+                    result.append(0.0)
+                else:
+                    try:
+                        result.append(float(val_str))
+                    except ValueError:
+                        result.append(val_str)
+        if symbolic:
+            return result
         return np.array(result, dtype=np.float64)
 
-    def set_vector_data(self, vector):
-        vector = np.asarray(vector, dtype=np.float64).flatten()
+    def set_vector_data(self, vector, symbolic=False):
+        vector = np.asarray(vector).flatten()
         if len(vector) != self.size:
             self.set_size(len(vector))
         for i, val in enumerate(vector):
-            if isinstance(val, float) and val.is_integer():
-                text = str(int(val))
+            if symbolic and isinstance(val, (sp.Expr, sp.Number)):
+                text = str(val)
             else:
-                text = f"{val:.4g}"
+                if isinstance(val, float) and val.is_integer():
+                    text = str(int(val))
+                else:
+                    text = f"{val:.4g}"
             self.widgets[i].delete(0, tk.END)
             self.widgets[i].insert(0, text)
 
@@ -490,9 +499,6 @@ class VectorWidget(ttk.Frame):
                 messagebox.showerror(Language.tr('save_error'), str(e))
 
 
-# ----------------------------------------------------------------------
-# VectorOperationsPanel
-# ----------------------------------------------------------------------
 class VectorOperationsPanel(ttk.Frame):
     def __init__(self, parent, engine, step_viewer):
         super().__init__(parent)
@@ -503,7 +509,6 @@ class VectorOperationsPanel(ttk.Frame):
         self.grid_rowconfigure(1, weight=0)
         self.grid_columnconfigure(0, weight=1)
 
-        # Top frame with two vector widgets
         top_frame = ttk.Frame(self)
         top_frame.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
         top_frame.grid_columnconfigure(0, weight=1)
@@ -516,7 +521,6 @@ class VectorOperationsPanel(ttk.Frame):
         self.vec_b = VectorWidget(top_frame, title=Language.tr('vector_b'), size=3)
         self.vec_b.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
 
-        # Button frame
         btn_frame = ttk.LabelFrame(self, text=Language.tr('operations'))
         btn_frame.grid(row=1, column=0, sticky='ew', padx=5, pady=5)
         for i in range(4):
@@ -558,7 +562,6 @@ class VectorOperationsPanel(ttk.Frame):
     def update_language(self):
         self.vec_a.update_language()
         self.vec_b.update_language()
-        # Recreate buttons to update text
         btn_frame = self.grid_slaves(row=1, column=0)[0]
         for child in btn_frame.winfo_children():
             child.destroy()
@@ -583,14 +586,12 @@ class VectorOperationsPanel(ttk.Frame):
         self.step_viewer.clear()
         if steps:
             for step in steps:
-                # Номер шага в engine с 0, отображаем с 1
                 self.step_viewer.add_step(step['step'] + 1, step['desc'])
                 state = step.get('state')
                 if state is not None:
                     self.step_viewer.add_matrix(state, title=Language.tr('state'))
-        # Финальный результат
-        if isinstance(result, np.ndarray):
-            if result.ndim == 0:
+        if isinstance(result, (np.ndarray, sp.Matrix)):
+            if hasattr(result, 'ndim') and result.ndim == 0:
                 self.step_viewer.add_result(str(result.item()))
             else:
                 self.step_viewer.add_matrix(result, title=Language.tr('result'))
@@ -598,8 +599,8 @@ class VectorOperationsPanel(ttk.Frame):
             self.step_viewer.add_result(str(result))
 
     def _on_add(self):
-        a = self.vec_a.get_vector_data()
-        b = self.vec_b.get_vector_data()
+        a = self.vec_a.get_vector_data(symbolic=self.engine.get_symbolic_mode())
+        b = self.vec_b.get_vector_data(symbolic=self.engine.get_symbolic_mode())
         try:
             res, steps = self.engine.vector_add(a, b, show_steps=self.show_steps_var.get())
             self._show_result(res, steps)
@@ -607,8 +608,8 @@ class VectorOperationsPanel(ttk.Frame):
             self.step_viewer.add_error(str(e))
 
     def _on_subtract(self):
-        a = self.vec_a.get_vector_data()
-        b = self.vec_b.get_vector_data()
+        a = self.vec_a.get_vector_data(symbolic=self.engine.get_symbolic_mode())
+        b = self.vec_b.get_vector_data(symbolic=self.engine.get_symbolic_mode())
         try:
             res, steps = self.engine.vector_subtract(a, b, show_steps=self.show_steps_var.get())
             self._show_result(res, steps)
@@ -616,8 +617,8 @@ class VectorOperationsPanel(ttk.Frame):
             self.step_viewer.add_error(str(e))
 
     def _on_dot(self):
-        a = self.vec_a.get_vector_data()
-        b = self.vec_b.get_vector_data()
+        a = self.vec_a.get_vector_data(symbolic=self.engine.get_symbolic_mode())
+        b = self.vec_b.get_vector_data(symbolic=self.engine.get_symbolic_mode())
         try:
             res, steps = self.engine.vector_dot(a, b, show_steps=self.show_steps_var.get())
             self._show_result(res, steps)
@@ -625,8 +626,8 @@ class VectorOperationsPanel(ttk.Frame):
             self.step_viewer.add_error(str(e))
 
     def _on_cross(self):
-        a = self.vec_a.get_vector_data()
-        b = self.vec_b.get_vector_data()
+        a = self.vec_a.get_vector_data(symbolic=self.engine.get_symbolic_mode())
+        b = self.vec_b.get_vector_data(symbolic=self.engine.get_symbolic_mode())
         try:
             res, steps = self.engine.vector_cross(a, b, show_steps=self.show_steps_var.get())
             self._show_result(res, steps)
@@ -634,7 +635,7 @@ class VectorOperationsPanel(ttk.Frame):
             self.step_viewer.add_error(str(e))
 
     def _on_norm(self, vec_widget):
-        v = vec_widget.get_vector_data()
+        v = vec_widget.get_vector_data(symbolic=self.engine.get_symbolic_mode())
         try:
             res, steps = self.engine.vector_norm(v, show_steps=self.show_steps_var.get())
             self._show_result(res, steps)
@@ -642,7 +643,7 @@ class VectorOperationsPanel(ttk.Frame):
             self.step_viewer.add_error(str(e))
 
     def _on_normalize(self, vec_widget):
-        v = vec_widget.get_vector_data()
+        v = vec_widget.get_vector_data(symbolic=self.engine.get_symbolic_mode())
         try:
             res, steps = self.engine.vector_normalize(v, show_steps=self.show_steps_var.get())
             self._show_result(res, steps)
@@ -650,8 +651,8 @@ class VectorOperationsPanel(ttk.Frame):
             self.step_viewer.add_error(str(e))
 
     def _on_projection(self):
-        a = self.vec_a.get_vector_data()
-        b = self.vec_b.get_vector_data()
+        a = self.vec_a.get_vector_data(symbolic=self.engine.get_symbolic_mode())
+        b = self.vec_b.get_vector_data(symbolic=self.engine.get_symbolic_mode())
         try:
             res, steps = self.engine.vector_projection(a, b, show_steps=self.show_steps_var.get())
             self._show_result(res, steps)
@@ -659,8 +660,8 @@ class VectorOperationsPanel(ttk.Frame):
             self.step_viewer.add_error(str(e))
 
     def _on_angle(self):
-        a = self.vec_a.get_vector_data()
-        b = self.vec_b.get_vector_data()
+        a = self.vec_a.get_vector_data(symbolic=self.engine.get_symbolic_mode())
+        b = self.vec_b.get_vector_data(symbolic=self.engine.get_symbolic_mode())
         degrees = messagebox.askyesno(Language.tr('angle_unit'), Language.tr('use_degrees'))
         try:
             res, steps = self.engine.vector_angle(a, b, show_steps=self.show_steps_var.get(), degrees=degrees)
@@ -674,23 +675,21 @@ class VectorOperationsPanel(ttk.Frame):
         if not third_str:
             return
         try:
-            a = self.vec_a.get_vector_data()
-            b = self.vec_b.get_vector_data()
-            c = np.array([float(x.strip()) for x in third_str.split()])
-            if len(c) != 3:
-                raise ValueError(Language.tr('err_triple_3d'))
+            a = self.vec_a.get_vector_data(symbolic=self.engine.get_symbolic_mode())
+            b = self.vec_b.get_vector_data(symbolic=self.engine.get_symbolic_mode())
+            c = [float(x.strip()) for x in third_str.split()] if not self.engine.get_symbolic_mode() else third_str.split()
             res, steps = self.engine.vector_triple_scalar(a, b, c, show_steps=self.show_steps_var.get())
             self._show_result(res, steps)
         except Exception as e:
             self.step_viewer.add_error(str(e))
 
     def _on_scalar_mul(self, vec_widget):
-        from tkinter.simpledialog import askfloat
-        scalar = askfloat(Language.tr('scalar_input'), Language.tr('enter_scalar'))
+        from tkinter.simpledialog import askstring
+        scalar = askstring(Language.tr('scalar_input'), Language.tr('enter_scalar'))
         if scalar is None:
             return
         try:
-            v = vec_widget.get_vector_data()
+            v = vec_widget.get_vector_data(symbolic=self.engine.get_symbolic_mode())
             res, steps = self.engine.vector_scalar_multiply(v, scalar, show_steps=self.show_steps_var.get())
             self._show_result(res, steps)
         except Exception as e:

@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import numpy as np
+import sympy as sp
 import threading
 import time
 import psutil
@@ -24,7 +25,6 @@ class MatrixCalculatorApp:
         self.config = config.Config()
         self.cancel_event = threading.Event()
 
-        # Operation configuration: internal id -> (method_name, num_matrices, needs_scalar)
         self.op_config = {
             'add':        ('add_matrices',       2, False),
             'sub':        ('subtract_matrices',  2, False),
@@ -50,13 +50,11 @@ class MatrixCalculatorApp:
         self._create_status_bar()
 
         self._start_monitoring()
-        # Set initial operation
         first_op = list(self.operations.keys())[0]
         self.operation_var.set(first_op)
         self._on_operation_change()
 
     def _build_operations_dict(self):
-        """Rebuild self.operations from self.op_config using current language."""
         self.operations = {}
         for op_id in self.operation_ids:
             display = Language.tr(f'op_{op_id}')
@@ -84,7 +82,6 @@ class MatrixCalculatorApp:
         toolbar = ttk.Frame(self.root, padding="5")
         toolbar.pack(fill="x")
 
-        # Operation
         self.op_label = ttk.Label(toolbar, text=Language.tr('operation'))
         self.op_label.pack(side="left", padx=5)
 
@@ -94,14 +91,12 @@ class MatrixCalculatorApp:
         self.op_combo.pack(side="left", padx=5)
         self.op_combo.bind("<<ComboboxSelected>>", self._on_operation_change)
 
-        # Scalar
         self.scalar_label = ttk.Label(toolbar, text=Language.tr('scalar'))
         self.scalar_label.pack(side="left", padx=(20, 5))
 
         self.scalar_entry = ttk.Entry(toolbar, textvariable=self.scalar_var, width=8)
         self.scalar_entry.pack(side="left", padx=5)
 
-        # Buttons
         self.compute_btn = ttk.Button(toolbar, text=Language.tr('compute'), command=self._compute)
         self.compute_btn.pack(side="left", padx=10)
 
@@ -111,7 +106,6 @@ class MatrixCalculatorApp:
         self.swap_btn = ttk.Button(toolbar, text=Language.tr('swap'), command=self._swap_matrices)
         self.swap_btn.pack(side="left", padx=2)
 
-        # Precision
         self.prec_label = ttk.Label(toolbar, text=Language.tr('precision'))
         self.prec_label.pack(side="left", padx=(20, 5))
 
@@ -121,7 +115,6 @@ class MatrixCalculatorApp:
         self.prec_combo.pack(side="left", padx=5)
         self.prec_combo.bind("<<ComboboxSelected>>", self._on_precision_change)
 
-        # Language selector
         self.lang_label = ttk.Label(toolbar, text=Language.tr('language'))
         self.lang_label.pack(side="left", padx=(20, 5))
 
@@ -130,14 +123,27 @@ class MatrixCalculatorApp:
         self.lang_combo.bind("<<ComboboxSelected>>", self._on_language_change)
         self.lang_combo.pack(side="left", padx=5)
 
+        self.symbolic_var = tk.BooleanVar(value=False)
+        self.symbolic_check = ttk.Checkbutton(
+            toolbar,
+            text=Language.tr('symbolic_mode'),
+            variable=self.symbolic_var,
+            command=self._on_symbolic_toggle
+        )
+        self.symbolic_check.pack(side="left", padx=(20, 5))
+
         self.toolbar = toolbar
 
+    def _on_symbolic_toggle(self):
+        enabled = self.symbolic_var.get()
+        self.engine.set_symbolic_mode(enabled)
+        mode = "Symbolic" if enabled else "Numeric"
+        self.status_var.set(f"Mode: {mode}")
+
     def _create_main_area(self):
-        """Create main area with notebook for Matrix and Vector tabs."""
         main_paned = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
         main_paned.pack(fill="both", expand=True, padx=5, pady=5)
 
-        # ---- Right side: step viewer (created first so it's available) ----
         right_frame = ttk.Frame(main_paned)
         main_paned.add(right_frame, weight=1)
 
@@ -148,14 +154,12 @@ class MatrixCalculatorApp:
         self.step_viewer = StepViewer(right_frame)
         self.step_viewer.pack(fill="both", expand=True, padx=5, pady=5)
 
-        # ---- Left side: notebook for matrix/vector operations ----
         self.left_frame = ttk.Frame(main_paned)
         main_paned.add(self.left_frame, weight=1)
 
         self.notebook = ttk.Notebook(self.left_frame)
         self.notebook.pack(fill="both", expand=True)
 
-        # ----- Matrix tab -----
         self.matrix_tab = ttk.Frame(self.notebook)
         self.notebook.add(self.matrix_tab, text=Language.tr('matrix_tab'))
 
@@ -167,7 +171,6 @@ class MatrixCalculatorApp:
         self.matrix_b = MatrixWidget(self.matrix_tab, Language.tr('matrix_b'), rows=3, cols=3)
         self.matrix_b.pack(fill="both", expand=True, padx=5, pady=5)
 
-        # ----- Vector tab -----
         self.vector_tab = VectorOperationsPanel(self.notebook, self.engine, self.step_viewer)
         self.notebook.add(self.vector_tab, text=Language.tr('vector_tab'))
 
@@ -187,15 +190,11 @@ class MatrixCalculatorApp:
         self._refresh_ui_language()
 
     def _refresh_ui_language(self):
-        """Update all UI texts after language change."""
-        # Update notebook tabs
         self.notebook.tab(self.matrix_tab, text=Language.tr('matrix_tab'))
         self.notebook.tab(self.vector_tab, text=Language.tr('vector_tab'))
-
-        # Update vector tab's internal language
         self.vector_tab.update_language()
+        self.symbolic_check.config(text=Language.tr('symbolic_mode'))
 
-        # Existing matrix language updates
         current_op_display = self.operation_var.get()
         current_op_id = None
         for op_id, (method, num, scalar) in self.op_config.items():
@@ -235,7 +234,6 @@ class MatrixCalculatorApp:
             self.status_var.set(Language.tr('ready'))
 
     def _update_slau_ui(self):
-        """Show/hide vertical separator and adjust titles for SLAE (matrix tab only)."""
         op_display = self.operation_var.get()
         if op_display == Language.tr('op_solve'):
             if not self.slau_separator.winfo_ismapped():
@@ -262,17 +260,16 @@ class MatrixCalculatorApp:
         if op_display not in self.operations:
             return
         _, num_matrices, needs_scalar = self.operations[op_display]
-
         self.scalar_entry.config(state='normal' if needs_scalar else 'disabled')
         self.matrix_b.set_state('normal' if num_matrices == 2 else 'disabled')
         self._update_slau_ui()
 
     def _swap_matrices(self):
         try:
-            data_a = np.array(self.matrix_a.get_matrix_data())
-            data_b = np.array(self.matrix_b.get_matrix_data())
-            self.matrix_a.set_matrix_data(data_b)
-            self.matrix_b.set_matrix_data(data_a)
+            data_a = self.matrix_a.get_matrix_data(symbolic=self.engine.get_symbolic_mode())
+            data_b = self.matrix_b.get_matrix_data(symbolic=self.engine.get_symbolic_mode())
+            self.matrix_a.set_matrix_data(data_b, symbolic=self.engine.get_symbolic_mode())
+            self.matrix_b.set_matrix_data(data_a, symbolic=self.engine.get_symbolic_mode())
             self.status_var.set(Language.tr('swap_success'))
         except Exception as e:
             logger.error(f"Swap error: {e}")
@@ -343,16 +340,23 @@ class MatrixCalculatorApp:
                 raise ValueError(Language.tr('operation_unknown'))
 
             method_name, num_matrices, needs_scalar = self.operations[op_display]
+            symbolic = self.engine.get_symbolic_mode()
 
-            A = np.array(self.matrix_a.get_matrix_data())
-            B = np.array(self.matrix_b.get_matrix_data())
+            A = self.matrix_a.get_matrix_data(symbolic=symbolic)
+            B = self.matrix_b.get_matrix_data(symbolic=symbolic)
 
-            if A.size == 0 and num_matrices >= 1:
-                raise ValueError(Language.tr('matrix_empty'))
-            if num_matrices == 2 and B.size == 0:
-                raise ValueError(Language.tr('matrix_empty'))
+            if symbolic:
+                if not A:
+                    raise ValueError(Language.tr('matrix_empty'))
+            else:
+                A = np.array(A)
+                B = np.array(B)
+                if A.size == 0 and num_matrices >= 1:
+                    raise ValueError(Language.tr('matrix_empty'))
+                if num_matrices == 2 and B.size == 0:
+                    raise ValueError(Language.tr('matrix_empty'))
 
-            scalar = float(self.scalar_var.get()) if needs_scalar else 1.0
+            scalar = self.scalar_var.get() if needs_scalar else 1.0
 
             if num_matrices == 1:
                 args = [A, scalar] if needs_scalar else [A]
@@ -381,12 +385,11 @@ class MatrixCalculatorApp:
         self.step_viewer.add_header(f"{Language.tr('operation')} {op_name}")
         if steps:
             for step in steps:
-                # step numbers are 0-based in engine; display 1-based
                 self.step_viewer.add_step(step['step'] + 1, step['desc'])
                 if 'state' in step and step['state'] is not None:
                     self.step_viewer.add_matrix(step['state'], Language.tr('state'))
         self.step_viewer.add_header(Language.tr('result'))
-        if isinstance(result, np.ndarray):
+        if isinstance(result, (np.ndarray, sp.Matrix)):
             self.step_viewer.add_matrix(result)
         else:
             self.step_viewer.add_result(str(result))

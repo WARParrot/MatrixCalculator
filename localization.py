@@ -177,6 +177,8 @@ TRANSLATIONS = {
         'step_triple_init': 'Смешанное произведение: {v1} · ({v2} × {v3})',
         'step_triple_cross': 'Векторное произведение ({v2} × {v3}) = {cross}',
         'step_triple_dot': 'Скалярное произведение = {dot}',
+
+        'symbolic_mode': 'Символьный режим'
     },
     'en': {
         # Application
@@ -357,6 +359,8 @@ TRANSLATIONS = {
         'save': 'Save...',
         'load_vector': 'Load {title}',
         'save_vector': 'Save {title}',
+
+        'symbolic_mode': 'Symbolic Mode'
     }
 }
 
