@@ -10,7 +10,7 @@ from engine import MatrixEngine
 from ui.widgets import (
     MatrixWidget, StepViewer, VectorOperationsPanel,
     SpecialRelationsPanel, BasisPanel, GeometryPanel,
-    EigenPanel
+    EigenPanel, GramSchmidtPanel, VisualizationPanel
 )
 from localization import Language
 import config
@@ -81,6 +81,21 @@ class MatrixCalculatorApp:
         self.menubar.add_cascade(label=Language.tr('help_menu'), menu=self.help_menu)
 
         self.root.config(menu=self.menubar)
+
+        self.file_menu.add_command(label=Language.tr('export_latex'), command=self._export_latex)
+
+    def _export_latex(self):
+        filename = filedialog.asksaveasfilename(
+            title=Language.tr('export_latex'),
+            defaultextension=".tex",
+            filetypes=[("LaTeX files", "*.tex")]
+        )
+        if filename:
+            try:
+                self.step_viewer.export_to_latex(filename)
+                messagebox.showinfo(Language.tr('success'), Language.tr('latex_export_success'))
+            except Exception as e:
+                messagebox.showerror(Language.tr('error'), str(e))
 
     def _create_toolbar(self):
         toolbar = ttk.Frame(self.root, padding="5")
@@ -194,6 +209,14 @@ class MatrixCalculatorApp:
         self.eigen_tab = EigenPanel(self.notebook, self.engine, self.step_viewer,
                                     lambda: self.matrix_a.get_matrix_data(symbolic=self.engine.get_symbolic_mode()))
         self.notebook.add(self.eigen_tab, text=Language.tr('eigen_tab'))
+
+        # ----- Gram-Schmidt Tab -----
+        self.gram_schmidt_tab = GramSchmidtPanel(self.notebook, self.engine, self.step_viewer)
+        self.notebook.add(self.gram_schmidt_tab, text=Language.tr('gram_schmidt_tab'))
+
+        # ----- Visualization Tab -----
+        self.viz_tab = VisualizationPanel(self.notebook, self.engine)
+        self.notebook.add(self.viz_tab, text=Language.tr('visualization_tab'))
 
     def _create_status_bar(self):
         status_frame = ttk.Frame(self.root)

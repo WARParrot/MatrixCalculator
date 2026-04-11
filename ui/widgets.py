@@ -2,7 +2,12 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import numpy as np
 import sympy as sp
+import matplotlib
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from mpl_toolkits.mplot3d import Axes3D
 from localization import Language
+matplotlib.use('TkAgg')
 
 
 class MatrixWidget(ttk.Frame):
@@ -308,6 +313,71 @@ class StepViewer(ttk.Frame):
     def scroll_to_bottom(self):
         self.text.see(tk.END)
 
+    def export_to_latex(self, filename=None):
+        """Export the step viewer content as a LaTeX document."""
+        content = self.text.get('1.0', tk.END)
+        lines = content.split('\n')
+
+        latex_lines = []
+        latex_lines.append(r'\documentclass{article}')
+        latex_lines.append(r'\usepackage{amsmath, amssymb}')
+        latex_lines.append(r'\begin{document}')
+        latex_lines.append(r'\section*{Matrix Calculator Solution}')
+
+        in_matrix = False
+        matrix_rows = []
+
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+
+            # Handle matrix state lines (from add_matrix formatting)
+            if line.startswith('State:'):
+                latex_lines.append(r'\subsection*{State}')
+                in_matrix = True
+                matrix_rows = []
+            elif line.startswith('Result:'):
+                if in_matrix:
+                    # Flush matrix
+                    if matrix_rows:
+                        latex_lines.append(r'\[')
+                        latex_lines.append(r'\begin{pmatrix}')
+                        for row in matrix_rows:
+                            latex_lines.append(' & '.join(row) + r' \\')
+                        latex_lines.append(r'\end{pmatrix}')
+                        latex_lines.append(r'\]')
+                    in_matrix = False
+                latex_lines.append(r'\subsection*{Result}')
+                result_text = line.replace('Result:', '').strip()
+                latex_lines.append(result_text + r'\\')
+            elif in_matrix:
+                # Parse matrix row like "  1: 1.0000 2.0000 3.0000"
+                parts = line.split(':')
+                if len(parts) >= 2:
+                    nums = parts[1].strip().split()
+                    matrix_rows.append(nums)
+            else:
+                # Regular step text
+                latex_lines.append(line + r'\\')
+
+        if in_matrix and matrix_rows:
+            latex_lines.append(r'\[')
+            latex_lines.append(r'\begin{pmatrix}')
+            for row in matrix_rows:
+                latex_lines.append(' & '.join(row) + r' \\')
+            latex_lines.append(r'\end{pmatrix}')
+            latex_lines.append(r'\]')
+
+        latex_lines.append(r'\end{document}')
+
+        latex_content = '\n'.join(latex_lines)
+
+        if filename:
+            with open(filename, 'w', encoding='utf-8') as f:
+                f.write(latex_content)
+            return True
+        return latex_content
 
 class VectorWidget(ttk.Frame):
     MAX_SIZE = 20
@@ -1046,3 +1116,135 @@ class EigenPanel(ttk.Frame):
             self.step_viewer.add_matrix(result)
         else:
             self.step_viewer.add_result(str(result))
+
+
+class VisualizationPanel(ttk.Frame):
+    """Panel for 3D vector and point visualization."""
+    def __init__(self, parent, engine):
+        super().__init__(parent)
+        self.engine = engine
+
+        # Control frame
+        ctrl_frame = ttk.Frame(self)
+        ctrl_frame.pack(fill='x', padx=5, pady=5)
+
+        ttk.Label(ctrl_frame, text=Language.tr('vectors_to_plot')).pack(side='left', padx=5)
+        self.vectors_entry = ttk.Entry(ctrl_frame, width=50)
+        self.vectors_entry.pack(side='left', padx=5)
+        ttk.Label(ctrl_frame, text=Language.tr('comma_separated_vectors')).pack(side='left')
+
+        ttk.Button(ctrl_frame, text=Language.tr('btn_plot'), command=self._plot).pack(side='left', padx=10)
+        ttk.Button(ctrl_frame, text=Language.tr('btn_clear'), command=self._clear).pack(side='left')
+
+        # Matplotlib figure
+        self.fig = Figure(figsize=(5, 4), dpi=100)
+        self.ax = self.fig.add_subplot(111, projection='3d')
+        self.canvas = FigureCanvasTkAgg(self.fig, self)
+        self.canvas.get_tk_widget().pack(fill='both', expand=True, padx=5, pady=5)
+
+        self._clear()
+
+    def _clear(self):
+        self.ax.clear()
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
+        self.ax.set_title(Language.tr('vector_plot'))
+        # Draw origin
+        self.ax.scatter([0], [0], [0], color='black', s=20)
+        self.canvas.draw()
+
+    def _plot(self):
+        text = self.vectors_entry.get().strip()
+        if not text:
+            return
+        # Parse vectors: each vector as "x,y,z" separated by semicolon or newline
+        vectors_str = text.replace('\n', ';').split(';')
+        vectors = []
+        for v_str in vectors_str:
+            parts = v_str.strip().split(',')
+            if len(parts) >= 2:
+                try:
+                    vec = [float(p) for p in parts[:3]]
+                    if len(vec) == 2:
+                        vec.append(0)  # 2D -> 3D with z=0
+                    vectors.append(vec)
+                except ValueError:
+                    pass
+
+        self._clear()
+        colors = ['r', 'g', 'b', 'c', 'm', 'y', 'orange', 'purple']
+        origin = [0, 0, 0]
+        for i, v in enumerate(vectors):
+            color = colors[i % len(colors)]
+            self.ax.quiver(*origin, *v, color=color, arrow_length_ratio=0.1, label=f'v{i+1}')
+            # Label endpoint
+            self.ax.text(v[0], v[1], v[2], f'v{i+1}', color=color)
+
+        # Auto scale
+        all_coords = [0] + [c for v in vectors for c in v]
+        max_val = max(abs(c) for c in all_coords) + 1
+        self.ax.set_xlim([-max_val, max_val])
+        self.ax.set_ylim([-max_val, max_val])
+        self.ax.set_zlim([-max_val, max_val])
+        self.ax.legend()
+        self.canvas.draw()
+
+
+class GramSchmidtPanel(ttk.Frame):
+    def __init__(self, parent, engine, step_viewer):
+        super().__init__(parent)
+        self.engine = engine
+        self.step_viewer = step_viewer
+
+        # Input area
+        input_frame = ttk.LabelFrame(self, text=Language.tr('input_vectors'))
+        input_frame.pack(fill='both', expand=True, padx=5, pady=5)
+
+        self.text = tk.Text(input_frame, height=8, font=('Consolas', 10))
+        self.text.pack(fill='both', expand=True, padx=5, pady=5)
+        ttk.Label(input_frame, text=Language.tr('vectors_format')).pack(anchor='w', padx=5)
+
+        # Options
+        opt_frame = ttk.Frame(self)
+        opt_frame.pack(fill='x', padx=5, pady=5)
+        self.normalize_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(opt_frame, text=Language.tr('normalize'), variable=self.normalize_var).pack(side='left')
+        self.show_steps_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(opt_frame, text=Language.tr('show_steps'), variable=self.show_steps_var).pack(side='left', padx=10)
+
+        # Button
+        ttk.Button(self, text=Language.tr('btn_gram_schmidt'), command=self._compute).pack(pady=5)
+
+    def _compute(self):
+        text = self.text.get('1.0', tk.END).strip()
+        lines = [line.strip() for line in text.split('\n') if line.strip()]
+        vectors = []
+        for line in lines:
+            parts = line.replace(',', ' ').split()
+            try:
+                vec = [float(p) for p in parts]
+                vectors.append(vec)
+            except ValueError:
+                # Try symbolic
+                vectors.append(parts)
+
+        try:
+            basis, steps = self.engine.gram_schmidt(
+                vectors, normalize=self.normalize_var.get(),
+                show_steps=self.show_steps_var.get())
+            self._show_result(basis, steps)
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _show_result(self, basis, steps):
+        self.step_viewer.clear()
+        self.step_viewer.add_header(Language.tr('gram_schmidt_result'))
+        if steps:
+            for step in steps:
+                self.step_viewer.add_step(step['step'] + 1, step['desc'])
+                if step.get('state') is not None:
+                    self.step_viewer.add_matrix(step['state'], title=Language.tr('state'))
+        self.step_viewer.add_header(Language.tr('orthogonal_basis'))
+        for i, v in enumerate(basis):
+            self.step_viewer.add_matrix(v, title=f"e{i+1}")

@@ -1101,6 +1101,97 @@ class MatrixEngine:
                 return (P, D), steps
             return (P, D), None
 
+    def gram_schmidt(self, vectors, normalize=True, show_steps=False):
+        """
+        Perform Gram–Schmidt orthogonalization on a list of vectors.
+        Returns orthogonal (and optionally orthonormal) basis.
+        """
+        if self._symbolic_mode:
+            vecs = [sp.Matrix(v) for v in vectors]
+        else:
+            vecs = [np.asarray(v, dtype=self._current_dtype) for v in vectors]
+
+        dim = vecs[0].shape[0]
+        for v in vecs:
+            if v.shape[0] != dim:
+                raise ValueError(Language.tr('err_vectors_same_dim'))
+
+        basis = []
+        steps = []
+        step_num = 0
+
+        if show_steps:
+            steps.append({'step': step_num, 'desc': Language.tr('step_gram_schmidt_init',
+                                                                vectors=str([self._format_vector(v) for v in vecs])),
+                          'state': None})
+            step_num += 1
+
+        for i, v in enumerate(vecs):
+            u = v
+            if show_steps:
+                steps.append({'step': step_num, 'desc': Language.tr('step_gram_schmidt_start',
+                                                                    idx=i + 1, v=self._format_vector(v)),
+                              'state': None})
+                step_num += 1
+
+            for j, b in enumerate(basis):
+                if self._symbolic_mode:
+                    proj = (v.dot(b) / b.dot(b)) * b
+                else:
+                    proj = (np.dot(v, b) / np.dot(b, b)) * b
+                u = u - proj
+                if show_steps:
+                    steps.append({'step': step_num, 'desc': Language.tr('step_gram_schmidt_subtract',
+                                                                        j=j + 1, proj=self._format_vector(proj),
+                                                                        u=self._format_vector(u)), 'state': u})
+                    step_num += 1
+
+            # Check linear independence
+            if self._symbolic_mode:
+                if u.norm() == 0:
+                    if show_steps:
+                        steps.append({'step': step_num, 'desc': Language.tr('step_gram_schmidt_dependent',
+                                                                            idx=i + 1), 'state': None})
+                        step_num += 1
+                    continue
+            else:
+                if np.linalg.norm(u) < 1e-12:
+                    if show_steps:
+                        steps.append({'step': step_num, 'desc': Language.tr('step_gram_schmidt_dependent',
+                                                                            idx=i + 1), 'state': None})
+                        step_num += 1
+                    continue
+
+            basis.append(u)
+            if show_steps:
+                steps.append({'step': step_num, 'desc': Language.tr('step_gram_schmidt_orthogonal',
+                                                                    idx=i + 1, u=self._format_vector(u)), 'state': u})
+                step_num += 1
+
+        if normalize:
+            normalized = []
+            for i, u in enumerate(basis):
+                if self._symbolic_mode:
+                    norm_u = u.norm()
+                    e = u / norm_u
+                else:
+                    norm_u = np.linalg.norm(u)
+                    e = u / norm_u
+                normalized.append(e)
+                if show_steps:
+                    steps.append({'step': step_num, 'desc': Language.tr('step_gram_schmidt_normalize',
+                                                                        idx=i + 1, u=self._format_vector(u),
+                                                                        e=self._format_vector(e)), 'state': e})
+                    step_num += 1
+            basis = normalized
+
+        if show_steps:
+            steps.append({'step': step_num, 'desc': Language.tr('step_gram_schmidt_result',
+                                                                basis=str([self._format_vector(b) for b in basis])),
+                          'state': None})
+
+        return basis, steps
+
     def stats(self):
         return {
             "device": self.device,
