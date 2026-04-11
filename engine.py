@@ -419,9 +419,12 @@ class MatrixEngine:
         v2 = self._as_vector(v2)
         self._validate_vectors_same_length(v1, v2, "addition")
         if show_steps:
-            steps = [{'step': 0, 'desc': Language.tr('step_vector_add_init', v1=self._format_vector(v1), v2=self._format_vector(v2)), 'state': None}]
+            steps = [{'step': 0, 'desc': Language.tr('step_vector_add_init',
+                                                     v1=self._format_vector(v1), v2=self._format_vector(v2)),
+                      'state': None}]
             result = v1 + v2
-            steps.append({'step': 1, 'desc': Language.tr('step_vector_add_result', res=self._format_vector(result)), 'state': result})
+            steps.append({'step': 1, 'desc': Language.tr('step_vector_add_result',
+                                                         res=self._format_vector(result)), 'state': result})
             return result, steps
         return v1 + v2, None
 
@@ -430,9 +433,12 @@ class MatrixEngine:
         v2 = self._as_vector(v2)
         self._validate_vectors_same_length(v1, v2, "subtraction")
         if show_steps:
-            steps = [{'step': 0, 'desc': Language.tr('step_vector_sub_init', v1=self._format_vector(v1), v2=self._format_vector(v2)), 'state': None}]
+            steps = [{'step': 0, 'desc': Language.tr('step_vector_sub_init',
+                                                     v1=self._format_vector(v1), v2=self._format_vector(v2)),
+                      'state': None}]
             result = v1 - v2
-            steps.append({'step': 1, 'desc': Language.tr('step_vector_sub_result', res=self._format_vector(result)), 'state': result})
+            steps.append({'step': 1, 'desc': Language.tr('step_vector_sub_result',
+                                                         res=self._format_vector(result)), 'state': result})
             return result, steps
         return v1 - v2, None
 
@@ -440,9 +446,11 @@ class MatrixEngine:
         v = self._as_vector(v)
         scalar = self._parse_expression(scalar)
         if show_steps:
-            steps = [{'step': 0, 'desc': Language.tr('step_vector_scale_init', v=self._format_vector(v), scalar=scalar), 'state': None}]
+            steps = [{'step': 0, 'desc': Language.tr('step_vector_scale_init',
+                                                     v=self._format_vector(v), scalar=scalar), 'state': None}]
             result = scalar * v
-            steps.append({'step': 1, 'desc': Language.tr('step_vector_scale_result', res=self._format_vector(result)), 'state': result})
+            steps.append({'step': 1, 'desc': Language.tr('step_vector_scale_result',
+                                                         res=self._format_vector(result)), 'state': result})
             return result, steps
         return scalar * v, None
 
@@ -453,17 +461,26 @@ class MatrixEngine:
         if self._symbolic_mode:
             dot_val = v1.dot(v2)
             if show_steps:
-                steps = [{'step': 0, 'desc': Language.tr('step_dot_init', v1=self._format_vector(v1), v2=self._format_vector(v2)), 'state': None}]
-                products = [v1[i]*v2[i] for i in range(len(v1))]
-                steps.append({'step': 1, 'desc': Language.tr('step_dot_products', prods=str(products)), 'state': None})
+                steps = [{'step': 0, 'desc': Language.tr('step_dot_init',
+                                                         v1=self._format_vector(v1), v2=self._format_vector(v2)),
+                          'state': None}]
+                products = [v1[i] * v2[i] for i in range(len(v1))]
+                steps.append({'step': 1, 'desc': Language.tr('step_dot_products',
+                                                             prods=str(products)), 'state': None})
                 steps.append({'step': 2, 'desc': Language.tr('step_dot_sum', sum=dot_val), 'state': None})
                 return dot_val, steps
             return dot_val, None
         else:
             if show_steps:
-                steps = [{'step': 0, 'desc': Language.tr('step_dot_init', v1=self._format_vector(v1), v2=self._format_vector(v2)), 'state': None}]
+                steps = [{'step': 0, 'desc': Language.tr('step_dot_init',
+                                                         v1=self._format_vector(v1), v2=self._format_vector(v2)),
+                          'state': None}]
+                # Show element-wise multiplication with indices
                 products = v1 * v2
-                steps.append({'step': 1, 'desc': Language.tr('step_dot_products', prods=self._format_vector(products)), 'state': products})
+                prod_desc = " + ".join([f"({v1[i]:.4g}·{v2[i]:.4g})" for i in range(len(v1))])
+                steps.append({'step': 1, 'desc': Language.tr('step_dot_products_detail',
+                                                             detail=prod_desc, prods=self._format_vector(products)),
+                              'state': products})
                 dot_val = float(np.sum(products))
                 steps.append({'step': 2, 'desc': Language.tr('step_dot_sum', sum=dot_val), 'state': None})
                 return dot_val, steps
@@ -474,26 +491,48 @@ class MatrixEngine:
         v2 = self._as_vector(v2)
         if len(v1) != 3 or len(v2) != 3:
             raise ValueError(Language.tr('err_cross_3d', len1=len(v1), len2=len(v2)))
+
         if self._symbolic_mode:
             cross = v1.cross(v2)
             if show_steps:
-                steps = [{'step': 0, 'desc': Language.tr('step_cross_init', v1=self._format_vector(v1), v2=self._format_vector(v2)), 'state': None}]
-                x = v1[1]*v2[2] - v1[2]*v2[1]
-                y = v1[2]*v2[0] - v1[0]*v2[2]
-                z = v1[0]*v2[1] - v1[1]*v2[0]
-                steps.append({'step': 1, 'desc': Language.tr('step_cross_components', x=x, y=y, z=z), 'state': None})
-                steps.append({'step': 2, 'desc': Language.tr('step_cross_result', res=self._format_vector(cross)), 'state': cross})
+                steps = [{'step': 0, 'desc': Language.tr('step_cross_init',
+                                                         v1=self._format_vector(v1), v2=self._format_vector(v2)),
+                          'state': None}, {'step': 1, 'desc': Language.tr('step_cross_determinant',
+                                                                          i=v1[1] * v2[2] - v1[2] * v2[1],
+                                                                          j=v1[2] * v2[0] - v1[0] * v2[2],
+                                                                          k=v1[0] * v2[1] - v1[1] * v2[0]),
+                                           'state': None}]
+                # Show determinant formula
+                # Show each component calculation
+                x = v1[1] * v2[2] - v1[2] * v2[1]
+                y = v1[2] * v2[0] - v1[0] * v2[2]
+                z = v1[0] * v2[1] - v1[1] * v2[0]
+                steps.append({'step': 2, 'desc': Language.tr('step_cross_components',
+                                                             x=x, y=y, z=z), 'state': None})
+                steps.append({'step': 3, 'desc': Language.tr('step_cross_result',
+                                                             res=self._format_vector(cross)), 'state': cross})
                 return cross, steps
             return cross, None
         else:
             if show_steps:
-                steps = [{'step': 0, 'desc': Language.tr('step_cross_init', v1=self._format_vector(v1), v2=self._format_vector(v2)), 'state': None}]
-                x = v1[1]*v2[2] - v1[2]*v2[1]
-                y = v1[2]*v2[0] - v1[0]*v2[2]
-                z = v1[0]*v2[1] - v1[1]*v2[0]
-                steps.append({'step': 1, 'desc': Language.tr('step_cross_components', x=x, y=y, z=z), 'state': None})
+                steps = [{'step': 0, 'desc': Language.tr('step_cross_init',
+                                                         v1=self._format_vector(v1), v2=self._format_vector(v2)),
+                          'state': None}, {'step': 1, 'desc': Language.tr('step_cross_determinant_numeric',
+                                                                          a1=v1[0], a2=v1[1], a3=v1[2],
+                                                                          b1=v2[0], b2=v2[1], b3=v2[2]), 'state': None}]
+                # Show determinant expansion
+                # Calculate components with formulas
+                x = v1[1] * v2[2] - v1[2] * v2[1]
+                y = v1[2] * v2[0] - v1[0] * v2[2]
+                z = v1[0] * v2[1] - v1[1] * v2[0]
+                steps.append({'step': 2, 'desc': Language.tr('step_cross_components_calc',
+                                                             x_expr=f"{v1[1]:.4g}·{v2[2]:.4g} - {v1[2]:.4g}·{v2[1]:.4g} = {x:.4f}",
+                                                             y_expr=f"{v1[2]:.4g}·{v2[0]:.4g} - {v1[0]:.4g}·{v2[2]:.4g} = {y:.4f}",
+                                                             z_expr=f"{v1[0]:.4g}·{v2[1]:.4g} - {v1[1]:.4g}·{v2[0]:.4g} = {z:.4f}"),
+                              'state': None})
                 result = np.array([x, y, z], dtype=self._current_dtype)
-                steps.append({'step': 2, 'desc': Language.tr('step_cross_result', res=self._format_vector(result)), 'state': result})
+                steps.append({'step': 3, 'desc': Language.tr('step_cross_result',
+                                                             res=self._format_vector(result)), 'state': result})
                 return result, steps
             return np.cross(v1, v2), None
 

@@ -177,8 +177,12 @@ TRANSLATIONS = {
         'step_triple_init': 'Смешанное произведение: {v1} · ({v2} × {v3})',
         'step_triple_cross': 'Векторное произведение ({v2} × {v3}) = {cross}',
         'step_triple_dot': 'Скалярное произведение = {dot}',
+        'step_dot_products_detail': 'Поэлементные произведения: {detail} = {prods}',
+        'step_cross_determinant': 'Определитель: i·({i}) - j·({j}) + k·({k})',
+        'step_cross_determinant_numeric': 'Определитель: |i  j  k|\n|{a1} {a2} {a3}|\n|{b1} {b2} {b3}|',
+        'step_cross_components_calc': 'Компоненты:\n  x = {x_expr}\n  y = {y_expr}\n  z = {z_expr}',
 
-        'symbolic_mode': 'Символьный режим'
+        'symbolic_mode': 'Символьный режим',
     },
     'en': {
         # Application
@@ -360,7 +364,12 @@ TRANSLATIONS = {
         'load_vector': 'Load {title}',
         'save_vector': 'Save {title}',
 
-        'symbolic_mode': 'Symbolic Mode'
+        'step_dot_products_detail': 'Element-wise products: {detail} = {prods}',
+        'step_cross_determinant': 'Determinant: i·({i}) - j·({j}) + k·({k})',
+        'step_cross_determinant_numeric': 'Determinant: |i  j  k|\n|{a1} {a2} {a3}|\n|{b1} {b2} {b3}|',
+        'step_cross_components_calc': 'Components:\n  x = {x_expr}\n  y = {y_expr}\n  z = {z_expr}',
+
+        'symbolic_mode': 'Symbolic Mode',
     }
 }
 
