@@ -672,22 +672,77 @@ class MatrixEngine:
         v3 = self._as_vector(v3)
         if not (len(v1) == len(v2) == len(v3) == 3):
             raise ValueError(Language.tr('err_triple_3d'))
+
         if self._symbolic_mode:
             cross = v2.cross(v3)
             dot = v1.dot(cross)
             if show_steps:
-                steps = [{'step': 0, 'desc': Language.tr('step_triple_init', v1=self._format_vector(v1), v2=self._format_vector(v2), v3=self._format_vector(v3)), 'state': None}]
-                steps.append({'step': 1, 'desc': Language.tr('step_triple_cross', cross=self._format_vector(cross)), 'state': cross})
-                steps.append({'step': 2, 'desc': Language.tr('step_triple_dot', dot=dot), 'state': None})
+                steps = [{'step': 0, 'desc': Language.tr('step_triple_init',
+                                                         v1=self._format_vector(v1), v2=self._format_vector(v2),
+                                                         v3=self._format_vector(v3)), 'state': None}]
+                # Step 1: Show cross product of v2 and v3
+                steps.append({'step': 1, 'desc': Language.tr('step_triple_cross_start',
+                                                             v2=self._format_vector(v2), v3=self._format_vector(v3)),
+                              'state': None})
+                # Cross product components (symbolic)
+                cx = v2[1] * v3[2] - v2[2] * v3[1]
+                cy = v2[2] * v3[0] - v2[0] * v3[2]
+                cz = v2[0] * v3[1] - v2[1] * v3[0]
+                steps.append({'step': 2, 'desc': Language.tr('step_triple_cross_components',
+                                                             x=cx, y=cy, z=cz), 'state': None})
+                steps.append({'step': 3, 'desc': Language.tr('step_triple_cross_result',
+                                                             cross=self._format_vector(cross)), 'state': cross})
+                # Step 4: Dot product with v1
+                steps.append({'step': 4, 'desc': Language.tr('step_triple_dot_start',
+                                                             v1=self._format_vector(v1),
+                                                             cross=self._format_vector(cross)), 'state': None})
+                # Element-wise products
+                products = [v1[i] * cross[i] for i in range(3)]
+                steps.append({'step': 5, 'desc': Language.tr('step_triple_dot_products',
+                                                             prods=str(products)), 'state': None})
+                steps.append({'step': 6, 'desc': Language.tr('step_triple_dot_sum',
+                                                             sum=dot), 'state': None})
+                # Final result
+                steps.append({'step': 7, 'desc': Language.tr('step_triple_result',
+                                                             result=dot), 'state': None})
                 return dot, steps
             return dot, None
         else:
             cross = np.cross(v2, v3)
             dot = float(np.dot(v1, cross))
             if show_steps:
-                steps = [{'step': 0, 'desc': Language.tr('step_triple_init', v1=self._format_vector(v1), v2=self._format_vector(v2), v3=self._format_vector(v3)), 'state': None}]
-                steps.append({'step': 1, 'desc': Language.tr('step_triple_cross', cross=self._format_vector(cross)), 'state': cross})
-                steps.append({'step': 2, 'desc': Language.tr('step_triple_dot', dot=dot), 'state': None})
+                steps = [{'step': 0, 'desc': Language.tr('step_triple_init',
+                                                         v1=self._format_vector(v1), v2=self._format_vector(v2),
+                                                         v3=self._format_vector(v3)), 'state': None},
+                         {'step': 1, 'desc': Language.tr('step_triple_cross_start_numeric',
+                                                         v2=self._format_vector(v2), v3=self._format_vector(v3)),
+                          'state': None}]
+                # Step 1: Cross product calculation
+                # Compute cross components with formulas
+                x = v2[1] * v3[2] - v2[2] * v3[1]
+                y = v2[2] * v3[0] - v2[0] * v3[2]
+                z = v2[0] * v3[1] - v2[1] * v3[0]
+                steps.append({'step': 2, 'desc': Language.tr('step_triple_cross_components_calc',
+                                                             x_expr=f"{v2[1]:.4g}·{v3[2]:.4g} - {v2[2]:.4g}·{v3[1]:.4g} = {x:.4f}",
+                                                             y_expr=f"{v2[2]:.4g}·{v3[0]:.4g} - {v2[0]:.4g}·{v3[2]:.4g} = {y:.4f}",
+                                                             z_expr=f"{v2[0]:.4g}·{v3[1]:.4g} - {v2[1]:.4g}·{v3[0]:.4g} = {z:.4f}"),
+                              'state': None})
+                steps.append({'step': 3, 'desc': Language.tr('step_triple_cross_result',
+                                                             cross=self._format_vector(cross)), 'state': cross})
+                # Step 4: Dot product with v1
+                steps.append({'step': 4, 'desc': Language.tr('step_triple_dot_start_numeric',
+                                                             v1=self._format_vector(v1),
+                                                             cross=self._format_vector(cross)), 'state': None})
+                # Show element-wise multiplication
+                prod_expr = " + ".join([f"({v1[i]:.4g}·{cross[i]:.4g})" for i in range(3)])
+                steps.append({'step': 5, 'desc': Language.tr('step_triple_dot_products_detail',
+                                                             detail=prod_expr, prods=self._format_vector(v1 * cross)),
+                              'state': v1 * cross})
+                steps.append({'step': 6, 'desc': Language.tr('step_triple_dot_sum',
+                                                             sum=dot), 'state': None})
+                # Final result with volume interpretation
+                steps.append({'step': 7, 'desc': Language.tr('step_triple_result_volume',
+                                                             result=dot, volume=abs(dot)), 'state': None})
                 return dot, steps
             return dot, None
 

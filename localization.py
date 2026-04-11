@@ -177,10 +177,23 @@ TRANSLATIONS = {
         'step_triple_init': 'Смешанное произведение: {v1} · ({v2} × {v3})',
         'step_triple_cross': 'Векторное произведение ({v2} × {v3}) = {cross}',
         'step_triple_dot': 'Скалярное произведение = {dot}',
+
         'step_dot_products_detail': 'Поэлементные произведения: {detail} = {prods}',
         'step_cross_determinant': 'Определитель: i·({i}) - j·({j}) + k·({k})',
         'step_cross_determinant_numeric': 'Определитель: |i  j  k|\n|{a1} {a2} {a3}|\n|{b1} {b2} {b3}|',
         'step_cross_components_calc': 'Компоненты:\n  x = {x_expr}\n  y = {y_expr}\n  z = {z_expr}',
+
+        'step_triple_cross_start': '1. Вычисляем векторное произведение {v2} × {v3}:',
+        'step_triple_cross_start_numeric': '1. Векторное произведение B × C:',
+        'step_triple_cross_components_calc': '   x = {x_expr}\n   y = {y_expr}\n   z = {z_expr}',
+        'step_triple_dot_start': '2. Скалярное произведение {v1} · ({v2} × {v3}):',
+        'step_triple_dot_start_numeric': '2. Скалярное произведение A · (B × C):',
+        'step_triple_dot_products_detail': '   Поэлементно: {detail} = {prods}',
+        'step_triple_dot_products': '   Произведения: {prods}',
+        'step_triple_dot_sum': '   Сумма = {sum:.6f}',
+        'step_triple_result': 'Результат (смешанное произведение) = {result}',
+        'step_triple_result_volume': 'Результат: A·(B×C) = {result:.6f}\nОбъём параллелепипеда = |{result:.6f}| = {'
+                                     'volume:.6f}',
 
         'symbolic_mode': 'Символьный режим',
     },
@@ -368,6 +381,18 @@ TRANSLATIONS = {
         'step_cross_determinant': 'Determinant: i·({i}) - j·({j}) + k·({k})',
         'step_cross_determinant_numeric': 'Determinant: |i  j  k|\n|{a1} {a2} {a3}|\n|{b1} {b2} {b3}|',
         'step_cross_components_calc': 'Components:\n  x = {x_expr}\n  y = {y_expr}\n  z = {z_expr}',
+
+        'step_triple_cross_start': '1. Compute cross product {v2} × {v3}:',
+        'step_triple_cross_start_numeric': '1. Cross product B × C:',
+        'step_triple_cross_components_calc': '   x = {x_expr}\n   y = {y_expr}\n   z = {z_expr}',
+        'step_triple_dot_start': '2. Dot product {v1} · ({v2} × {v3}):',
+        'step_triple_dot_start_numeric': '2. Dot product A · (B × C):',
+        'step_triple_dot_products_detail': '   Element-wise: {detail} = {prods}',
+        'step_triple_dot_products': '   Products: {prods}',
+        'step_triple_dot_sum': '   Sum = {sum:.6f}',
+        'step_triple_result': 'Result (scalar triple product) = {result}',
+        'step_triple_result_volume': 'Result: A·(B×C) = {result:.6f}\nParallelepiped volume = |{result:.6f}| = {'
+                                     'volume:.6f}',
 
         'symbolic_mode': 'Symbolic Mode',
     }
