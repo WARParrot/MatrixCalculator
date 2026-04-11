@@ -7,7 +7,10 @@ import time
 import psutil
 import logging
 from engine import MatrixEngine
-from ui.widgets import MatrixWidget, StepViewer, VectorOperationsPanel
+from ui.widgets import (
+    MatrixWidget, StepViewer, VectorOperationsPanel,
+    SpecialRelationsPanel, BasisPanel, GeometryPanel
+)
 from localization import Language
 import config
 
@@ -174,6 +177,18 @@ class MatrixCalculatorApp:
         self.vector_tab = VectorOperationsPanel(self.notebook, self.engine, self.step_viewer)
         self.notebook.add(self.vector_tab, text=Language.tr('vector_tab'))
 
+        # ----- Special Relations Tab -----
+        self.special_tab = SpecialRelationsPanel(self.notebook, self.engine, self.step_viewer)
+        self.notebook.add(self.special_tab, text=Language.tr('special_tab'))
+
+        # ----- Basis & Decomposition Tab -----
+        self.basis_tab = BasisPanel(self.notebook, self.engine, self.step_viewer)
+        self.notebook.add(self.basis_tab, text=Language.tr('basis_tab'))
+
+        # ----- Geometry Tab -----
+        self.geometry_tab = GeometryPanel(self.notebook, self.engine, self.step_viewer)
+        self.notebook.add(self.geometry_tab, text=Language.tr('geometry_tab'))
+
     def _create_status_bar(self):
         status_frame = ttk.Frame(self.root)
         status_frame.pack(fill="x", padx=10, pady=2)
@@ -232,6 +247,10 @@ class MatrixCalculatorApp:
         current_status = self.status_var.get()
         if current_status not in ('Вычисление...', 'Computing...', 'Отмена...', 'Canceling...'):
             self.status_var.set(Language.tr('ready'))
+
+        self.notebook.tab(self.special_tab, text=Language.tr('special_tab'))
+        self.notebook.tab(self.basis_tab, text=Language.tr('basis_tab'))
+        self.notebook.tab(self.geometry_tab, text=Language.tr('geometry_tab'))
 
     def _update_slau_ui(self):
         op_display = self.operation_var.get()

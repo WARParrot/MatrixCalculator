@@ -196,6 +196,68 @@ TRANSLATIONS = {
                                      'volume:.6f}',
 
         'symbolic_mode': 'Символьный режим',
+
+        # Special relations
+        'input_vectors': 'Входные векторы',
+        'comma_separated': '(через запятую/пробел)',
+        'parameter_name': 'Параметр:',
+        'btn_collinear_check': 'Коллинеарны?',
+        'btn_collinear_param': 'Найти λ для коллинеарности',
+        'btn_orthogonal': 'Ортогональны?',
+        'btn_coplanar': 'Компланарны?',
+        'collinearity_check': 'Проверка коллинеарности',
+        'collinearity_param': 'Параметр коллинеарности',
+        'orthogonality_check': 'Проверка ортогональности',
+        'coplanarity_check': 'Проверка компланарности',
+
+        # Step descriptions for collinearity
+        'step_collinear_init': 'Векторы: a = {v1}, b = {v2}',
+        'step_collinear_2d_eq': 'Условие коллинеарности (2D): {eq}',
+        'step_collinear_3d_cross': 'Векторное произведение: a × b = {cross}',
+        'step_collinear_3d_eq': 'Приравниваем компоненту к нулю: {eq}',
+        'step_collinear_solve': 'Решаем относительно {param}: {solutions}',
+
+        # Basis and decomposition
+        'vector_to_decompose': 'Вектор для разложения',
+        'basis_vectors': 'Базисные векторы',
+        'btn_check_basis': 'Проверить базис',
+        'btn_decompose': 'Разложить',
+        'basis_check': 'Проверка базиса',
+        'decomposition_result': 'Координаты в базисе',
+        'coordinates': 'Координаты',
+
+        'err_basis_dimension': 'Все векторы должны быть одной размерности',
+        'err_basis_count': 'Требуется {expected} векторов, получено {got}',
+
+        'step_decompose_init': 'Разложение вектора {v} по базису {basis}',
+        'step_decompose_matrix': 'Матрица перехода (базис по столбцам):\n{matrix}',
+        'step_decompose_solve': 'Решаем систему {system}',
+        'step_decompose_result': 'Коэффициенты: {coeffs}',
+        'step_decompose_matrix_numeric': 'Матрица перехода:\n{matrix}',
+        'step_decompose_solve_numeric': 'Решаем линейную систему',
+        'step_decompose_result_numeric': 'Координаты: {coeffs}',
+
+        # Transition matrix
+        'step_transition_init': 'Построение матрицы перехода',
+        'step_transition_formula': 'P = (новый базис)⁻¹ · (старый базис)',
+        'step_transition_matrix': 'Матрица перехода:\n{matrix}',
+
+        # Geometry
+        'points_coordinates': 'Координаты точек',
+        'btn_collinear_points': 'Точки на одной прямой?',
+        'btn_coplanar_points': 'Точки в одной плоскости?',
+        'btn_triangle_area': 'Площадь треугольника (A,B,C)',
+        'btn_tetrahedron_volume': 'Объём тетраэдра (A,B,C,D)',
+        'points_collinear': 'Коллинеарность точек',
+        'points_coplanar': 'Компланарность точек',
+        'triangle_area': 'Площадь треугольника',
+        'tetrahedron_volume': 'Объём тетраэдра',
+        'err_3d_required': 'Требуются 3D векторы',
+        'err_coplanar_3d': 'Компланарность определена только для 3D векторов',
+
+        'special_tab': 'Специальные отношения',
+        'basis_tab': 'Базис и разложение',
+        'geometry_tab': 'Геометрия',
     },
     'en': {
         # Application
@@ -395,6 +457,64 @@ TRANSLATIONS = {
                                      'volume:.6f}',
 
         'symbolic_mode': 'Symbolic Mode',
+
+        # Special relations
+        'input_vectors': 'Input Vectors',
+        'comma_separated': '(comma/space separated)',
+        'parameter_name': 'Parameter:',
+        'btn_collinear_check': 'Collinear?',
+        'btn_collinear_param': 'Find λ for collinearity',
+        'btn_orthogonal': 'Orthogonal?',
+        'btn_coplanar': 'Coplanar?',
+        'collinearity_check': 'Collinearity Check',
+        'collinearity_param': 'Collinearity Parameter',
+        'orthogonality_check': 'Orthogonality Check',
+        'coplanarity_check': 'Coplanarity Check',
+
+        'step_collinear_init': 'Vectors: a = {v1}, b = {v2}',
+        'step_collinear_2d_eq': 'Collinearity condition (2D): {eq}',
+        'step_collinear_3d_cross': 'Cross product: a × b = {cross}',
+        'step_collinear_3d_eq': 'Set component to zero: {eq}',
+        'step_collinear_solve': 'Solve for {param}: {solutions}',
+
+        'vector_to_decompose': 'Vector to decompose',
+        'basis_vectors': 'Basis vectors',
+        'btn_check_basis': 'Check basis',
+        'btn_decompose': 'Decompose',
+        'basis_check': 'Basis Check',
+        'decomposition_result': 'Coordinates in basis',
+        'coordinates': 'Coordinates',
+
+        'err_basis_dimension': 'All vectors must have same dimension',
+        'err_basis_count': 'Expected {expected} vectors, got {got}',
+
+        'step_decompose_init': 'Decompose vector {v} in basis {basis}',
+        'step_decompose_matrix': 'Transition matrix (basis columns):\n{matrix}',
+        'step_decompose_solve': 'Solve system {system}',
+        'step_decompose_result': 'Coefficients: {coeffs}',
+        'step_decompose_matrix_numeric': 'Transition matrix:\n{matrix}',
+        'step_decompose_solve_numeric': 'Solve linear system',
+        'step_decompose_result_numeric': 'Coordinates: {coeffs}',
+
+        'step_transition_init': 'Building transition matrix',
+        'step_transition_formula': 'P = (new basis)⁻¹ · (old basis)',
+        'step_transition_matrix': 'Transition matrix:\n{matrix}',
+
+        'points_coordinates': 'Point Coordinates',
+        'btn_collinear_points': 'Points collinear?',
+        'btn_coplanar_points': 'Points coplanar?',
+        'btn_triangle_area': 'Triangle Area (A,B,C)',
+        'btn_tetrahedron_volume': 'Tetrahedron Volume (A,B,C,D)',
+        'points_collinear': 'Points Collinearity',
+        'points_coplanar': 'Points Coplanarity',
+        'triangle_area': 'Triangle Area',
+        'tetrahedron_volume': 'Tetrahedron Volume',
+        'err_3d_required': '3D vectors required',
+        'err_coplanar_3d': 'Coplanarity defined only for 3D vectors',
+
+        'special_tab': 'Special Relations',
+        'basis_tab': 'Basis and decomposition',
+        'geometry_tab': 'Geometry',
     }
 }
 

@@ -679,11 +679,11 @@ class MatrixEngine:
             if show_steps:
                 steps = [{'step': 0, 'desc': Language.tr('step_triple_init',
                                                          v1=self._format_vector(v1), v2=self._format_vector(v2),
-                                                         v3=self._format_vector(v3)), 'state': None}]
+                                                         v3=self._format_vector(v3)), 'state': None},
+                         {'step': 1, 'desc': Language.tr('step_triple_cross_start',
+                                                         v2=self._format_vector(v2), v3=self._format_vector(v3)),
+                          'state': None}]
                 # Step 1: Show cross product of v2 and v3
-                steps.append({'step': 1, 'desc': Language.tr('step_triple_cross_start',
-                                                             v2=self._format_vector(v2), v3=self._format_vector(v3)),
-                              'state': None})
                 # Cross product components (symbolic)
                 cx = v2[1] * v3[2] - v2[2] * v3[1]
                 cy = v2[2] * v3[0] - v2[0] * v3[2]
@@ -745,6 +745,228 @@ class MatrixEngine:
                                                              result=dot, volume=abs(dot)), 'state': None})
                 return dot, steps
             return dot, None
+
+    # ----------------------------------------------------------------------
+    # Phase 2: Vector Special Relations, Basis, Geometry
+    # ----------------------------------------------------------------------
+
+    def are_collinear(self, v1, v2) -> bool:
+        """Check if two vectors are collinear (2D or 3D)."""
+        v1 = self._as_vector(v1)
+        v2 = self._as_vector(v2)
+        if len(v1) != len(v2):
+            return False
+        if self._symbolic_mode:
+            # Cross product zero vector
+            if len(v1) == 2:
+                cross = v1[0] * v2[1] - v1[1] * v2[0]
+                return cross == 0
+            else:
+                cross = v1.cross(v2)
+                return cross == sp.Matrix([0, 0, 0])
+        else:
+            if len(v1) == 2:
+                return np.isclose(v1[0] * v2[1] - v1[1] * v2[0], 0)
+            else:
+                return np.allclose(np.cross(v1, v2), 0)
+
+    def find_collinearity_parameter(self, v1_expr, v2_expr, param_name='λ', show_steps=False):
+        """
+        Given two vectors (lists of strings/expressions) containing a parameter,
+        find parameter values making them collinear.
+        Returns solutions and steps.
+        """
+        # Parse expressions
+        v1 = [self._parse_expression(comp) for comp in v1_expr]
+        v2 = [self._parse_expression(comp) for comp in v2_expr]
+        param = sp.Symbol(param_name)
+        steps = []
+
+        if show_steps:
+            steps.append({'step': 0, 'desc': Language.tr('step_collinear_init',
+                                                         v1=str(v1), v2=str(v2)), 'state': None})
+
+        if len(v1) == 2:
+            eq = v1[0] * v2[1] - v1[1] * v2[0]
+            if show_steps:
+                steps.append({'step': 1, 'desc': Language.tr('step_collinear_2d_eq',
+                                                             eq=f"{eq} = 0"), 'state': None})
+        else:
+            cross = sp.Matrix(v1).cross(sp.Matrix(v2))
+            # Find first non-zero component equation
+            non_zero = [comp for comp in cross if comp != 0]
+            if non_zero:
+                eq = non_zero[0]
+            else:
+                eq = sp.S.Zero
+            if show_steps:
+                steps.append({'step': 1, 'desc': Language.tr('step_collinear_3d_cross',
+                                                             cross=str(cross)), 'state': None})
+                steps.append({'step': 2, 'desc': Language.tr('step_collinear_3d_eq',
+                                                             eq=f"{eq} = 0"), 'state': None})
+
+        solutions = sp.solve(eq, param)
+        if show_steps:
+            steps.append({'step': len(steps), 'desc': Language.tr('step_collinear_solve',
+                                                                  param=param, solutions=str(solutions)),
+                          'state': None})
+
+        return solutions, steps
+
+    def are_coplanar(self, v1, v2, v3) -> bool:
+        """Check if three 3D vectors are coplanar (scalar triple product == 0)."""
+        v1 = self._as_vector(v1)
+        v2 = self._as_vector(v2)
+        v3 = self._as_vector(v3)
+        if not (len(v1) == len(v2) == len(v3) == 3):
+            raise ValueError(Language.tr('err_coplanar_3d'))
+        if self._symbolic_mode:
+            triple = v1.dot(v2.cross(v3))
+            return triple == 0
+        else:
+            return np.isclose(np.dot(v1, np.cross(v2, v3)), 0)
+
+    def is_orthogonal(self, v1, v2) -> bool:
+        """Check if two vectors are orthogonal (dot product == 0)."""
+        v1 = self._as_vector(v1)
+        v2 = self._as_vector(v2)
+        self._validate_vectors_same_length(v1, v2, "orthogonality")
+        if self._symbolic_mode:
+            return v1.dot(v2) == 0
+        else:
+            return np.isclose(np.dot(v1, v2), 0)
+
+    def is_basis(self, vectors) -> bool:
+        """Check if set of vectors forms a basis (linearly independent)."""
+        if self._symbolic_mode:
+            M = sp.Matrix(vectors).T  # columns are vectors
+            return M.det() != 0
+        else:
+            M = np.column_stack(vectors)
+            return not np.isclose(np.linalg.det(M), 0)
+
+    def decompose_vector(self, v, basis, show_steps=False):
+        """
+        Express vector v as linear combination of basis vectors.
+        Returns coefficients (coordinates in the basis) and steps.
+        """
+        v = self._as_vector(v)
+        basis = [self._as_vector(b) for b in basis]
+        dim = len(v)
+        if any(len(b) != dim for b in basis):
+            raise ValueError(Language.tr('err_basis_dimension'))
+        if len(basis) != dim:
+            raise ValueError(Language.tr('err_basis_count', got=len(basis), expected=dim))
+
+        steps = []
+        if show_steps:
+            steps.append({'step': 0, 'desc': Language.tr('step_decompose_init',
+                                                         v=self._format_vector(v),
+                                                         basis=str([self._format_vector(b) for b in basis])),
+                          'state': None})
+
+        if self._symbolic_mode:
+            # Build matrix with basis vectors as columns
+            M = sp.Matrix(basis).T
+            if show_steps:
+                steps.append({'step': 1, 'desc': Language.tr('step_decompose_matrix',
+                                                             matrix=str(M)), 'state': M})
+            # Solve M * x = v
+            coeffs = M.LUsolve(sp.Matrix(v))
+            if show_steps:
+                steps.append({'step': 2, 'desc': Language.tr('step_decompose_solve',
+                                                             system=f"{M}·x = {self._format_vector(v)}"),
+                              'state': None})
+                steps.append({'step': 3, 'desc': Language.tr('step_decompose_result',
+                                                             coeffs=str(coeffs)), 'state': None})
+            return list(coeffs), steps
+        else:
+            M = np.column_stack(basis)
+            if show_steps:
+                steps.append({'step': 1, 'desc': Language.tr('step_decompose_matrix_numeric',
+                                                             matrix=str(M)), 'state': M})
+            coeffs = np.linalg.solve(M, v)
+            if show_steps:
+                steps.append({'step': 2, 'desc': Language.tr('step_decompose_solve_numeric',
+                                                             system=f"{M}·x = {self._format_vector(v)}"),
+                              'state': None})
+                steps.append({'step': 3, 'desc': Language.tr('step_decompose_result_numeric',
+                                                             coeffs=self._format_vector(coeffs)), 'state': None})
+            return coeffs, steps
+
+    def change_of_basis_matrix(self, old_basis, new_basis, show_steps=False):
+        """Compute transition matrix from old basis to new basis."""
+        old = [self._as_vector(b) for b in old_basis]
+        new = [self._as_vector(b) for b in new_basis]
+        if self._symbolic_mode:
+            M_old = sp.Matrix(old).T
+            M_new = sp.Matrix(new).T
+            # Transition: coordinates in new = P * coordinates in old
+            P = M_new.inv() * M_old
+            if show_steps:
+                steps = [{'step': 0, 'desc': Language.tr('step_transition_init'), 'state': None}]
+                steps.append({'step': 1, 'desc': Language.tr('step_transition_formula'), 'state': None})
+                steps.append({'step': 2, 'desc': Language.tr('step_transition_matrix', matrix=str(P)), 'state': P})
+                return P, steps
+            return P, None
+        else:
+            M_old = np.column_stack(old)
+            M_new = np.column_stack(new)
+            P = np.linalg.solve(M_new, M_old)
+            if show_steps:
+                steps = [{'step': 0, 'desc': Language.tr('step_transition_init'), 'state': None}]
+                steps.append({'step': 1, 'desc': Language.tr('step_transition_formula'), 'state': None})
+                steps.append({'step': 2, 'desc': Language.tr('step_transition_matrix', matrix=str(P)), 'state': P})
+                return P, steps
+            return P, None
+
+    # ----------------------------------------------------------------------
+    # Geometric primitives (points, area, volume)
+    # ----------------------------------------------------------------------
+    def vector_from_points(self, A, B):
+        """Create vector from point A to point B."""
+        A = np.asarray(A, dtype=float)
+        B = np.asarray(B, dtype=float)
+        return B - A
+
+    def points_collinear(self, A, B, C) -> bool:
+        """Check if three points lie on a line."""
+        AB = self.vector_from_points(A, B)
+        AC = self.vector_from_points(A, C)
+        return self.are_collinear(AB, AC)
+
+    def points_coplanar(self, A, B, C, D) -> bool:
+        """Check if four points lie in a plane."""
+        AB = self.vector_from_points(A, B)
+        AC = self.vector_from_points(A, C)
+        AD = self.vector_from_points(A, D)
+        return self.are_coplanar(AB, AC, AD)
+
+    def triangle_area_points(self, A, B, C):
+        """Area of triangle given three 3D points."""
+        AB = self.vector_from_points(A, B)
+        AC = self.vector_from_points(A, C)
+        return self.triangle_area_vectors(AB, AC)
+
+    def triangle_area_vectors(self, v1, v2):
+        """Area of triangle from two side vectors."""
+        v1 = self._as_vector(v1)
+        v2 = self._as_vector(v2)
+        if len(v1) != 3 or len(v2) != 3:
+            raise ValueError(Language.tr('err_3d_required'))
+        cross = np.cross(v1, v2)
+        return 0.5 * np.linalg.norm(cross)
+
+    def tetrahedron_volume_points(self, A, B, C, D):
+        """Volume of tetrahedron from four 3D points."""
+        AB = self.vector_from_points(A, B)
+        AC = self.vector_from_points(A, C)
+        AD = self.vector_from_points(A, D)
+        return abs(np.dot(AB, np.cross(AC, AD))) / 6.0
+
+    def tetrahedron_volume_vectors(self, v1, v2, v3):
+        """Volume from three edge vectors from one vertex."""
+        return abs(np.dot(v1, np.cross(v2, v3))) / 6.0
 
     def stats(self):
         return {

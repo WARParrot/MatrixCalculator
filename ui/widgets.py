@@ -694,3 +694,259 @@ class VectorOperationsPanel(ttk.Frame):
             self._show_result(res, steps)
         except Exception as e:
             self.step_viewer.add_error(str(e))
+
+
+class SpecialRelationsPanel(ttk.Frame):
+    """Panel for collinearity, orthogonality, coplanarity checks."""
+    def __init__(self, parent, engine, step_viewer):
+        super().__init__(parent)
+        self.engine = engine
+        self.step_viewer = step_viewer
+
+        # Vector input frames
+        input_frame = ttk.LabelFrame(self, text=Language.tr('input_vectors'))
+        input_frame.pack(fill='x', padx=5, pady=5)
+
+        # Vector 1
+        ttk.Label(input_frame, text="v1:").grid(row=0, column=0, padx=5, pady=2)
+        self.v1_entry = ttk.Entry(input_frame, width=30)
+        self.v1_entry.grid(row=0, column=1, padx=5, pady=2)
+        ttk.Label(input_frame, text=Language.tr('comma_separated')).grid(row=0, column=2, padx=5)
+
+        # Vector 2
+        ttk.Label(input_frame, text="v2:").grid(row=1, column=0, padx=5, pady=2)
+        self.v2_entry = ttk.Entry(input_frame, width=30)
+        self.v2_entry.grid(row=1, column=1, padx=5, pady=2)
+
+        # Vector 3 (for coplanarity)
+        ttk.Label(input_frame, text="v3:").grid(row=2, column=0, padx=5, pady=2)
+        self.v3_entry = ttk.Entry(input_frame, width=30)
+        self.v3_entry.grid(row=2, column=1, padx=5, pady=2)
+
+        # Parameter for collinearity
+        param_frame = ttk.Frame(self)
+        param_frame.pack(fill='x', padx=5, pady=5)
+        ttk.Label(param_frame, text=Language.tr('parameter_name')).pack(side='left', padx=5)
+        self.param_var = tk.StringVar(value='λ')
+        ttk.Entry(param_frame, textvariable=self.param_var, width=5).pack(side='left')
+
+        # Buttons
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(fill='x', padx=5, pady=5)
+
+        ttk.Button(btn_frame, text=Language.tr('btn_collinear_check'),
+                   command=self._check_collinear).pack(side='left', padx=2)
+        ttk.Button(btn_frame, text=Language.tr('btn_collinear_param'),
+                   command=self._find_collinear_param).pack(side='left', padx=2)
+        ttk.Button(btn_frame, text=Language.tr('btn_orthogonal'),
+                   command=self._check_orthogonal).pack(side='left', padx=2)
+        ttk.Button(btn_frame, text=Language.tr('btn_coplanar'),
+                   command=self._check_coplanar).pack(side='left', padx=2)
+
+        self.show_steps_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(self, text=Language.tr('show_steps'),
+                        variable=self.show_steps_var).pack(anchor='w', padx=5)
+
+    def _parse_vector(self, entry_str):
+        parts = entry_str.replace(',', ' ').split()
+        return [part.strip() for part in parts if part.strip()]
+
+    def _check_collinear(self):
+        v1 = self._parse_vector(self.v1_entry.get())
+        v2 = self._parse_vector(self.v2_entry.get())
+        try:
+            res = self.engine.are_collinear(v1, v2)
+            self.step_viewer.clear()
+            self.step_viewer.add_header(Language.tr('collinearity_check'))
+            self.step_viewer.add_result(str(res))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _find_collinear_param(self):
+        v1 = self._parse_vector(self.v1_entry.get())
+        v2 = self._parse_vector(self.v2_entry.get())
+        param = self.param_var.get()
+        try:
+            sols, steps = self.engine.find_collinearity_parameter(
+                v1, v2, param, show_steps=self.show_steps_var.get())
+            self._show_result(sols, steps, Language.tr('collinearity_param'))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _check_orthogonal(self):
+        v1 = self._parse_vector(self.v1_entry.get())
+        v2 = self._parse_vector(self.v2_entry.get())
+        try:
+            res = self.engine.is_orthogonal(v1, v2)
+            self.step_viewer.clear()
+            self.step_viewer.add_header(Language.tr('orthogonality_check'))
+            self.step_viewer.add_result(str(res))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _check_coplanar(self):
+        v1 = self._parse_vector(self.v1_entry.get())
+        v2 = self._parse_vector(self.v2_entry.get())
+        v3 = self._parse_vector(self.v3_entry.get())
+        try:
+            res = self.engine.are_coplanar(v1, v2, v3)
+            self.step_viewer.clear()
+            self.step_viewer.add_header(Language.tr('coplanarity_check'))
+            self.step_viewer.add_result(str(res))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _show_result(self, result, steps, title):
+        self.step_viewer.clear()
+        self.step_viewer.add_header(title)
+        if steps:
+            for step in steps:
+                self.step_viewer.add_step(step['step'] + 1, step['desc'])
+                if step.get('state') is not None:
+                    self.step_viewer.add_matrix(step['state'], title=Language.tr('state'))
+        self.step_viewer.add_result(str(result))
+
+
+class BasisPanel(ttk.Frame):
+    def __init__(self, parent, engine, step_viewer):
+        super().__init__(parent)
+        self.engine = engine
+        self.step_viewer = step_viewer
+
+        # Vector to decompose
+        f1 = ttk.LabelFrame(self, text=Language.tr('vector_to_decompose'))
+        f1.pack(fill='x', padx=5, pady=5)
+        ttk.Label(f1, text="v:").pack(side='left', padx=5)
+        self.v_entry = ttk.Entry(f1, width=30)
+        self.v_entry.pack(side='left', padx=5)
+
+        # Basis vectors (3 inputs)
+        f2 = ttk.LabelFrame(self, text=Language.tr('basis_vectors'))
+        f2.pack(fill='x', padx=5, pady=5)
+        self.basis_entries = []
+        for i in range(3):
+            ttk.Label(f2, text=f"b{i+1}:").grid(row=i, column=0, padx=5, pady=2)
+            entry = ttk.Entry(f2, width=30)
+            entry.grid(row=i, column=1, padx=5, pady=2)
+            self.basis_entries.append(entry)
+
+        # Buttons
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(fill='x', padx=5, pady=5)
+        ttk.Button(btn_frame, text=Language.tr('btn_check_basis'),
+                   command=self._check_basis).pack(side='left', padx=2)
+        ttk.Button(btn_frame, text=Language.tr('btn_decompose'),
+                   command=self._decompose).pack(side='left', padx=2)
+
+        self.show_steps_var = tk.BooleanVar(value=True)
+        ttk.Checkbutton(self, text=Language.tr('show_steps'),
+                        variable=self.show_steps_var).pack(anchor='w', padx=5)
+
+    def _parse_vector(self, entry_str):
+        parts = entry_str.replace(',', ' ').split()
+        return [part.strip() for part in parts if part.strip()]
+
+    def _check_basis(self):
+        basis = [self._parse_vector(e.get()) for e in self.basis_entries]
+        try:
+            res = self.engine.is_basis(basis)
+            self.step_viewer.clear()
+            self.step_viewer.add_header(Language.tr('basis_check'))
+            self.step_viewer.add_result(str(res))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _decompose(self):
+        v = self._parse_vector(self.v_entry.get())
+        basis = [self._parse_vector(e.get()) for e in self.basis_entries]
+        try:
+            coeffs, steps = self.engine.decompose_vector(
+                v, basis, show_steps=self.show_steps_var.get())
+            self._show_result(coeffs, steps, Language.tr('decomposition_result'))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _show_result(self, result, steps, title):
+        self.step_viewer.clear()
+        self.step_viewer.add_header(title)
+        if steps:
+            for step in steps:
+                self.step_viewer.add_step(step['step'] + 1, step['desc'])
+                if step.get('state') is not None:
+                    self.step_viewer.add_matrix(step['state'], title=Language.tr('state'))
+        if isinstance(result, (list, np.ndarray)):
+            self.step_viewer.add_matrix(result, title=Language.tr('coordinates'))
+        else:
+            self.step_viewer.add_result(str(result))
+
+
+class GeometryPanel(ttk.Frame):
+    def __init__(self, parent, engine, step_viewer):
+        super().__init__(parent)
+        self.engine = engine
+        self.step_viewer = step_viewer
+
+        # Point inputs (4 points for tetrahedron)
+        f = ttk.LabelFrame(self, text=Language.tr('points_coordinates'))
+        f.pack(fill='x', padx=5, pady=5)
+        self.point_entries = []
+        for i, label in enumerate(['A', 'B', 'C', 'D']):
+            ttk.Label(f, text=f"{label}:").grid(row=i, column=0, padx=5, pady=2)
+            entry = ttk.Entry(f, width=30)
+            entry.grid(row=i, column=1, padx=5, pady=2)
+            ttk.Label(f, text="(x,y,z)").grid(row=i, column=2, padx=5)
+            self.point_entries.append(entry)
+
+        # Buttons
+        btn_frame = ttk.Frame(self)
+        btn_frame.pack(fill='x', padx=5, pady=5)
+        ttk.Button(btn_frame, text=Language.tr('btn_collinear_points'),
+                   command=self._check_points_collinear).pack(side='left', padx=2)
+        ttk.Button(btn_frame, text=Language.tr('btn_coplanar_points'),
+                   command=self._check_points_coplanar).pack(side='left', padx=2)
+        ttk.Button(btn_frame, text=Language.tr('btn_triangle_area'),
+                   command=self._triangle_area).pack(side='left', padx=2)
+        ttk.Button(btn_frame, text=Language.tr('btn_tetrahedron_volume'),
+                   command=self._tetrahedron_volume).pack(side='left', padx=2)
+
+    def _parse_point(self, entry_str):
+        parts = entry_str.replace(',', ' ').split()
+        return [float(p) for p in parts[:3]]
+
+    def _check_points_collinear(self):
+        A = self._parse_point(self.point_entries[0].get())
+        B = self._parse_point(self.point_entries[1].get())
+        C = self._parse_point(self.point_entries[2].get())
+        res = self.engine.points_collinear(A, B, C)
+        self.step_viewer.clear()
+        self.step_viewer.add_header(Language.tr('points_collinear'))
+        self.step_viewer.add_result(str(res))
+
+    def _check_points_coplanar(self):
+        A = self._parse_point(self.point_entries[0].get())
+        B = self._parse_point(self.point_entries[1].get())
+        C = self._parse_point(self.point_entries[2].get())
+        D = self._parse_point(self.point_entries[3].get())
+        res = self.engine.points_coplanar(A, B, C, D)
+        self.step_viewer.clear()
+        self.step_viewer.add_header(Language.tr('points_coplanar'))
+        self.step_viewer.add_result(str(res))
+
+    def _triangle_area(self):
+        A = self._parse_point(self.point_entries[0].get())
+        B = self._parse_point(self.point_entries[1].get())
+        C = self._parse_point(self.point_entries[2].get())
+        area = self.engine.triangle_area_points(A, B, C)
+        self.step_viewer.clear()
+        self.step_viewer.add_header(Language.tr('triangle_area'))
+        self.step_viewer.add_result(f"{area:.6f}")
+
+    def _tetrahedron_volume(self):
+        A = self._parse_point(self.point_entries[0].get())
+        B = self._parse_point(self.point_entries[1].get())
+        C = self._parse_point(self.point_entries[2].get())
+        D = self._parse_point(self.point_entries[3].get())
+        vol = self.engine.tetrahedron_volume_points(A, B, C, D)
+        self.step_viewer.clear()
+        self.step_viewer.add_header(Language.tr('tetrahedron_volume'))
+        self.step_viewer.add_result(f"{vol:.6f}")
