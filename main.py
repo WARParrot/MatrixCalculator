@@ -38,7 +38,9 @@ class MatrixCalculatorApp:
             'det':        ('determinant_matrix', 1, False),
             'rank':       ('rank_matrix',        1, False),
             'inv':        ('inverse_matrix',     1, False),
-            'solve':      ('solve_system',       2, False),
+            'solve_gauss': ('solve_system',      2, False),
+            'solve_cramer': ('solve_cramer',     2, True),
+            'solve_inverse': ('solve_inverse',   2, True),
         }
         self.operation_ids = list(self.op_config.keys())
         self._build_operations_dict()
@@ -426,7 +428,8 @@ class MatrixCalculatorApp:
 
         except Exception as e:
             logger.exception("Compute error")
-            self.root.after(0, lambda: self.step_viewer.add_error(f"{Language.tr('error')}: {str(e)}"))
+            error_msg = str(e)
+            self.root.after(0, lambda msg=error_msg: self.step_viewer.add_error(f"{Language.tr('error')}: {msg}"))
         finally:
             self.root.after(0, self._compute_finished)
 
@@ -435,9 +438,10 @@ class MatrixCalculatorApp:
         self.step_viewer.add_header(f"{Language.tr('operation')} {op_name}")
         if steps:
             for step in steps:
-                self.step_viewer.add_step(step['step'] + 1, step['desc'])
-                if 'state' in step and step['state'] is not None:
-                    self.step_viewer.add_matrix(step['state'], Language.tr('state'))
+                step_num = step.get('step', 0) + 1
+                self.step_viewer.add_step(step_num, step['desc'])
+                if step.get('state') is not None:
+                    self.step_viewer.add_matrix(step['state'], title=Language.tr('state'))
         self.step_viewer.add_header(Language.tr('result'))
         if isinstance(result, (np.ndarray, sp.Matrix)):
             self.step_viewer.add_matrix(result)

@@ -326,6 +326,34 @@ TRANSLATIONS = {
         'step_gram_schmidt_normalize': '  Нормируем e{idx} = {e}',
         'step_gram_schmidt_result': 'Результирующий базис: {basis}',
         'err_vectors_same_dim': 'Все векторы должны быть одинаковой размерности',
+
+        'op_solve_gauss': 'Решение СЛАУ (Гаусс)',
+        'op_solve_cramer': 'Решение СЛАУ (Крамер)',
+        'op_solve_inverse': 'Решение СЛАУ (Обратная матрица)',
+
+        'step_cramer_init': 'Решение методом Крамера',
+        'step_cramer_det_A': 'Определитель матрицы A: det(A) = {det}',
+        'step_cramer_replace': 'Заменяем столбец {col}: det(A_{col}) = {det_i}, x_{col} = {xi}',
+        'step_cramer_result': 'Решение: x = {x}',
+
+        'step_inverse_init': 'Решение через обратную матрицу',
+        'step_inverse_compute': 'Обратная матрица A⁻¹:',
+        'step_inverse_multiply': 'Умножаем A⁻¹ на B',
+        'step_inverse_result': 'Решение: x = {x}',
+
+        'err_cramer_single_rhs': 'Метод Крамера поддерживает только один столбец правой части',
+        'step_cramer_init': '=== Решение методом Крамера ===',
+        'step_cramer_det_A': 'Шаг 1: определитель матрицы A: det(A) = {det}',
+        'step_cramer_replace': 'Шаг {step}: заменяем столбец {col} на B, det(A{col}) = {det_i}, x{col} = {det_i} / '
+                               'det(A) = {xi}',
+        'step_cramer_result': 'Решение системы: x = {x}',
+
+        'step_inverse_init': '=== Решение через обратную матрицу ===',
+        'step_inverse_compute': 'Шаг 1: находим обратную матрицу A⁻¹:',
+        'step_inverse_multiply': 'Шаг 2: умножаем A⁻¹ на B:',
+        'step_inverse_component': '  x{i} = {expr} = {val}',
+        'step_inverse_result': 'Решение: x = {x}',
+        'step_inverse_result_matrix': 'Результирующая матрица X:\n{x}',
     },
     'en': {
         # Application
@@ -649,6 +677,34 @@ TRANSLATIONS = {
         'step_gram_schmidt_normalize': '  Normalize e{idx} = {e}',
         'step_gram_schmidt_result': 'Resulting basis: {basis}',
         'err_vectors_same_dim': 'All vectors must have the same dimension',
+
+        'op_solve_gauss': 'SLAE (Gauss)',
+        'op_solve_cramer': 'SLAE (Cramer)',
+        'op_solve_inverse': 'SLAE (Inverse matrix)',
+
+        'step_cramer_init': 'Solving with Cramer\'s method',
+        'step_cramer_det_A': 'Determinant A: det(A) = {det}',
+        'step_cramer_replace': 'Replacing {col}: det(A_{col}) = {det_i}, x_{col} = {xi}',
+        'step_cramer_result': 'Solution: x = {x}',
+
+        'step_inverse_init': 'Solving with inverse matrix method',
+        'step_inverse_compute': 'Inverse matrix A⁻¹:',
+        'step_inverse_multiply': 'Multiplying A⁻¹ by B',
+        'step_inverse_result': 'Solution: x = {x}',
+
+        'err_cramer_single_rhs': 'Cramer\'s rule supports only a single right-hand side column',
+        'step_cramer_init': '=== Solving with Cramer\'s Rule ===',
+        'step_cramer_det_A': 'Step 1: determinant of A: det(A) = {det}',
+        'step_cramer_replace': 'Step {step}: replace column {col} with B, det(A{col}) = {det_i}, x{col} = {det_i} / '
+                               'det(A) = {xi}',
+        'step_cramer_result': 'Solution: x = {x}',
+
+        'step_inverse_init': '=== Solving with Inverse Matrix ===',
+        'step_inverse_compute': 'Step 1: compute inverse matrix A⁻¹:',
+        'step_inverse_multiply': 'Step 2: multiply A⁻¹ by B:',
+        'step_inverse_component': '  x{i} = {expr} = {val}',
+        'step_inverse_result': 'Solution: x = {x}',
+        'step_inverse_result_matrix': 'Resulting matrix X:\n{x}',
     }
 }
 

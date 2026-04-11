@@ -1192,6 +1192,128 @@ class MatrixEngine:
 
         return basis, steps
 
+    def solve_cramer(self, A, B, show_steps=False):
+        if self._symbolic_mode:
+            A = sp.Matrix(A)
+            B = sp.Matrix(B)
+            if B.cols > 1:
+                raise ValueError(Language.tr('err_cramer_single_rhs'))
+            det_A = A.det()
+            if det_A == 0:
+                raise ValueError(Language.tr('err_singular_matrix'))
+            n = A.rows
+            x = sp.zeros(n, 1)
+            steps = []
+            if show_steps:
+                steps.append({'step': 0, 'desc': Language.tr('step_cramer_init'), 'state': None})
+                steps.append({'step': 1, 'desc': Language.tr('step_cramer_det_A', det=det_A), 'state': A})
+                step_num = 2
+            for i in range(n):
+                Ai = A.copy()
+                Ai[:, i] = B
+                det_Ai = Ai.det()
+                xi = det_Ai / det_A
+                x[i] = xi
+                if show_steps:
+                    steps.append({'step': step_num,
+                                  'desc': Language.tr('step_cramer_replace',
+                                                      step=step_num, col=i + 1, det_i=det_Ai, xi=xi),
+                                  'state': Ai})
+                    step_num += 1
+            if show_steps:
+                steps.append({'step': step_num,
+                              'desc': Language.tr('step_cramer_result', x=self._format_vector(x)),
+                              'state': x})
+            return x, steps
+        else:
+            A = np.array(A, dtype=self._current_dtype)
+            B = np.array(B, dtype=self._current_dtype).flatten()
+            n = A.shape[0]
+            det_A = np.linalg.det(A)
+            if np.isclose(det_A, 0):
+                raise ValueError(Language.tr('err_singular_matrix'))
+            x = np.zeros(n, dtype=self._current_dtype)
+            steps = []
+            if show_steps:
+                steps.append({'step': 0, 'desc': Language.tr('step_cramer_init'), 'state': None})
+                steps.append({'step': 1, 'desc': Language.tr('step_cramer_det_A', det=det_A), 'state': A})
+                step_num = 2
+            for i in range(n):
+                Ai = A.copy()
+                Ai[:, i] = B
+                det_Ai = np.linalg.det(Ai)
+                xi = det_Ai / det_A
+                x[i] = xi
+                if show_steps:
+                    steps.append({'step': step_num,
+                                  'desc': Language.tr('step_cramer_replace',
+                                                      step=step_num, col=i + 1, det_i=det_Ai, xi=xi),
+                                  'state': Ai})
+                    step_num += 1
+            if show_steps:
+                steps.append({'step': step_num,
+                              'desc': Language.tr('step_cramer_result', x=self._format_vector(x)),
+                              'state': x})
+            return x, steps
+
+    def solve_inverse(self, A, B, show_steps=False):
+        if self._symbolic_mode:
+            A = sp.Matrix(A)
+            B = sp.Matrix(B)
+            inv_A = A.inv()
+            x = inv_A * B
+            steps = []
+            if show_steps:
+                steps.append({'step': 0, 'desc': Language.tr('step_inverse_init'), 'state': None})
+                steps.append({'step': 1, 'desc': Language.tr('step_inverse_compute'), 'state': inv_A})
+                steps.append({'step': 2, 'desc': Language.tr('step_inverse_multiply'), 'state': None})
+                step_num = 3
+                if B.cols == 1:
+                    for i in range(A.rows):
+                        expr = ' + '.join([f'({inv_A[i, j]})*({B[j]})' for j in range(A.cols)])
+                        steps.append({'step': step_num,
+                                      'desc': Language.tr('step_inverse_component',
+                                                          i=i + 1, expr=expr, val=x[i]),
+                                      'state': None})
+                        step_num += 1
+                    steps.append({'step': step_num,
+                                  'desc': Language.tr('step_inverse_result', x=self._format_vector(x)),
+                                  'state': x})
+                else:
+                    steps.append({'step': step_num,
+                                  'desc': Language.tr('step_inverse_result_matrix', x=str(x)),
+                                  'state': x})
+            return x, steps
+        else:
+            A = np.array(A, dtype=self._current_dtype)
+            B = np.array(B, dtype=self._current_dtype)
+            inv_A = np.linalg.inv(A)
+            x = inv_A @ B
+            steps = []
+            if show_steps:
+                steps.append({'step': 0, 'desc': Language.tr('step_inverse_init'), 'state': None})
+                steps.append({'step': 1, 'desc': Language.tr('step_inverse_compute'), 'state': inv_A})
+                steps.append({'step': 2, 'desc': Language.tr('step_inverse_multiply'), 'state': None})
+                step_num = 3
+                if B.ndim == 1:
+                    for i in range(A.shape[0]):
+                        terms = [f'{inv_A[i, j]:.4f} * {B[j]:.4f}' for j in range(A.shape[1])]
+                        expr = ' + '.join(terms)
+                        val = float(x[i])
+                        steps.append({'step': step_num,
+                                      'desc': Language.tr('step_inverse_component',
+                                                          i=i + 1, expr=expr, val=val),
+                                      'state': None})
+                        step_num += 1
+                    steps.append({'step': step_num,
+                                  'desc': Language.tr('step_inverse_result', x=self._format_vector(x)),
+                                  'state': x})
+                else:
+                    steps.append({'step': step_num,
+                                  'desc': Language.tr('step_inverse_result_matrix', x=str(x)),
+                                  'state': x})
+            return x, steps
+
     def stats(self):
         return {
             "device": self.device,
