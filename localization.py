@@ -394,6 +394,15 @@ TRANSLATIONS = {
         'numeric_mode': 'числовом',
         'warn_heavy_operation_detailed': 'Операция «{op}» над матрицей {size}×{size} в {mode} режиме может '
                                          'выполняться очень долго (возможно, бесконечно). Продолжить?',
+
+        'v1_label': 'v1:',
+        'v2_label': 'v2:',
+        'v3_label': 'v3:',
+        'v_label': 'v:',
+        'b_label': 'b',
+        'xyz_format': '(x,y,z)',
+        'eigenvecs_matrix': 'P (собственные векторы)',
+        'eigenvals_diag': 'D (собственные значения)',
     },
     'en': {
         # Application
@@ -786,6 +795,15 @@ TRANSLATIONS = {
         'numeric_mode': 'numeric',
         'warn_heavy_operation_detailed': 'Operation "{op}" on a {size}×{size} matrix in {mode} mode may take a very '
                                          'long time (potentially indefinitely). Continue?',
+
+        'v1_label': 'v1:',
+        'v2_label': 'v2:',
+        'v3_label': 'v3:',
+        'v_label': 'v:',
+        'b_label': 'b',
+        'xyz_format': '(x,y,z)',
+        'eigenvecs_matrix': 'P (eigenvectors)',
+        'eigenvals_diag': 'D (eigenvalues)',
     }
 }
 

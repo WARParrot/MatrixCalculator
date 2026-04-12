@@ -213,7 +213,7 @@ class MatrixWidget(ttk.Frame):
                     f.write(" ".join(row_vals) + "\n")
             return True
         except Exception as e:
-            messagebox.showerror("Save Error", str(e))
+            messagebox.showerror(Language.tr("Save Error"), str(e))
             return False
 
     def load_from_file(self, filename):
@@ -243,7 +243,7 @@ class MatrixWidget(ttk.Frame):
                     self.widgets[(r, c)].insert(0, val)
             return True
         except Exception as e:
-            messagebox.showerror("Load Error", str(e))
+            messagebox.showerror(Language.tr("Load Error"), str(e))
             return False
 
 
@@ -378,6 +378,7 @@ class StepViewer(ttk.Frame):
                 f.write(latex_content)
             return True
         return latex_content
+
 
 class VectorWidget(ttk.Frame):
     MAX_SIZE = 20
@@ -767,36 +768,36 @@ class VectorOperationsPanel(ttk.Frame):
 
 
 class SpecialRelationsPanel(ttk.Frame):
-    """Panel for collinearity, orthogonality, coplanarity checks."""
     def __init__(self, parent, engine, step_viewer):
         super().__init__(parent)
         self.engine = engine
         self.step_viewer = step_viewer
 
         # Vector input frames
-        input_frame = ttk.LabelFrame(self, text=Language.tr('input_vectors'))
-        input_frame.pack(fill='x', padx=5, pady=5)
+        self.input_frame = ttk.LabelFrame(self, text=Language.tr('input_vectors'))
+        self.input_frame.pack(fill='x', padx=5, pady=5)
 
         # Vector 1
-        ttk.Label(input_frame, text="v1:").grid(row=0, column=0, padx=5, pady=2)
-        self.v1_entry = ttk.Entry(input_frame, width=30)
+        ttk.Label(self.input_frame, text=Language.tr('v1_label')).grid(row=0, column=0, padx=5, pady=2)
+        self.v1_entry = ttk.Entry(self.input_frame, width=30)
         self.v1_entry.grid(row=0, column=1, padx=5, pady=2)
-        ttk.Label(input_frame, text=Language.tr('comma_separated')).grid(row=0, column=2, padx=5)
+        ttk.Label(self.input_frame, text=Language.tr('comma_separated')).grid(row=0, column=2, padx=5)
 
         # Vector 2
-        ttk.Label(input_frame, text="v2:").grid(row=1, column=0, padx=5, pady=2)
-        self.v2_entry = ttk.Entry(input_frame, width=30)
+        ttk.Label(self.input_frame, text=Language.tr('v2_label')).grid(row=1, column=0, padx=5, pady=2)
+        self.v2_entry = ttk.Entry(self.input_frame, width=30)
         self.v2_entry.grid(row=1, column=1, padx=5, pady=2)
 
         # Vector 3 (for coplanarity)
-        ttk.Label(input_frame, text="v3:").grid(row=2, column=0, padx=5, pady=2)
-        self.v3_entry = ttk.Entry(input_frame, width=30)
+        ttk.Label(self.input_frame, text=Language.tr('v3_label')).grid(row=2, column=0, padx=5, pady=2)
+        self.v3_entry = ttk.Entry(self.input_frame, width=30)
         self.v3_entry.grid(row=2, column=1, padx=5, pady=2)
 
         # Parameter for collinearity
         param_frame = ttk.Frame(self)
         param_frame.pack(fill='x', padx=5, pady=5)
-        ttk.Label(param_frame, text=Language.tr('parameter_name')).pack(side='left', padx=5)
+        self.param_label = ttk.Label(param_frame, text=Language.tr('parameter_name'))
+        self.param_label.pack(side='left', padx=5)
         self.param_var = tk.StringVar(value='λ')
         ttk.Entry(param_frame, textvariable=self.param_var, width=5).pack(side='left')
 
@@ -804,18 +805,44 @@ class SpecialRelationsPanel(ttk.Frame):
         btn_frame = ttk.Frame(self)
         btn_frame.pack(fill='x', padx=5, pady=5)
 
-        ttk.Button(btn_frame, text=Language.tr('btn_collinear_check'),
-                   command=self._check_collinear).pack(side='left', padx=2)
-        ttk.Button(btn_frame, text=Language.tr('btn_collinear_param'),
-                   command=self._find_collinear_param).pack(side='left', padx=2)
-        ttk.Button(btn_frame, text=Language.tr('btn_orthogonal'),
-                   command=self._check_orthogonal).pack(side='left', padx=2)
-        ttk.Button(btn_frame, text=Language.tr('btn_coplanar'),
-                   command=self._check_coplanar).pack(side='left', padx=2)
+        self.btn_collinear_check = ttk.Button(btn_frame, text=Language.tr('btn_collinear_check'),
+                                              command=self._check_collinear)
+        self.btn_collinear_check.pack(side='left', padx=2)
+        self.btn_collinear_param = ttk.Button(btn_frame, text=Language.tr('btn_collinear_param'),
+                                              command=self._find_collinear_param)
+        self.btn_collinear_param.pack(side='left', padx=2)
+        self.btn_orthogonal = ttk.Button(btn_frame, text=Language.tr('btn_orthogonal'),
+                                         command=self._check_orthogonal)
+        self.btn_orthogonal.pack(side='left', padx=2)
+        self.btn_coplanar = ttk.Button(btn_frame, text=Language.tr('btn_coplanar'),
+                                       command=self._check_coplanar)
+        self.btn_coplanar.pack(side='left', padx=2)
 
         self.show_steps_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(self, text=Language.tr('show_steps'),
-                        variable=self.show_steps_var).pack(anchor='w', padx=5)
+        self.show_steps_check = ttk.Checkbutton(self, text=Language.tr('show_steps'),
+                                                variable=self.show_steps_var)
+        self.show_steps_check.pack(anchor='w', padx=5)
+
+    def update_language(self):
+        self.input_frame.config(text=Language.tr('input_vectors'))
+        # Update labels inside input_frame (they are children of input_frame)
+        for child in self.input_frame.winfo_children():
+            if isinstance(child, ttk.Label):
+                current = child.cget('text')
+                if 'v1' in current or 'Вектор 1' in current:
+                    child.config(text=Language.tr('v1_label'))
+                elif 'v2' in current or 'Вектор 2' in current:
+                    child.config(text=Language.tr('v2_label'))
+                elif 'v3' in current or 'Вектор 3' in current:
+                    child.config(text=Language.tr('v3_label'))
+                elif 'comma' in current or 'запятую' in current:
+                    child.config(text=Language.tr('comma_separated'))
+        self.param_label.config(text=Language.tr('parameter_name'))
+        self.btn_collinear_check.config(text=Language.tr('btn_collinear_check'))
+        self.btn_collinear_param.config(text=Language.tr('btn_collinear_param'))
+        self.btn_orthogonal.config(text=Language.tr('btn_orthogonal'))
+        self.btn_coplanar.config(text=Language.tr('btn_coplanar'))
+        self.show_steps_check.config(text=Language.tr('show_steps'))
 
     def _parse_vector(self, entry_str):
         parts = entry_str.replace(',', ' ').split()
@@ -878,33 +905,50 @@ class BasisPanel(ttk.Frame):
         self.step_viewer = step_viewer
 
         # Vector to decompose
-        f1 = ttk.LabelFrame(self, text=Language.tr('vector_to_decompose'))
-        f1.pack(fill='x', padx=5, pady=5)
-        ttk.Label(f1, text="v:").pack(side='left', padx=5)
-        self.v_entry = ttk.Entry(f1, width=30)
+        self.f1 = ttk.LabelFrame(self, text=Language.tr('vector_to_decompose'))
+        self.f1.pack(fill='x', padx=5, pady=5)
+        self.v_label = ttk.Label(self.f1, text=Language.tr('v_label'))
+        self.v_label.pack(side='left', padx=5)
+        self.v_entry = ttk.Entry(self.f1, width=30)
         self.v_entry.pack(side='left', padx=5)
 
-        # Basis vectors (3 inputs)
-        f2 = ttk.LabelFrame(self, text=Language.tr('basis_vectors'))
-        f2.pack(fill='x', padx=5, pady=5)
+        # Basis vectors
+        self.f2 = ttk.LabelFrame(self, text=Language.tr('basis_vectors'))
+        self.f2.pack(fill='x', padx=5, pady=5)
         self.basis_entries = []
+        self.basis_labels = []
         for i in range(3):
-            ttk.Label(f2, text=f"b{i+1}:").grid(row=i, column=0, padx=5, pady=2)
-            entry = ttk.Entry(f2, width=30)
+            lbl = ttk.Label(self.f2, text=f"{Language.tr('b_label')}{i+1}:")
+            lbl.grid(row=i, column=0, padx=5, pady=2)
+            self.basis_labels.append(lbl)
+            entry = ttk.Entry(self.f2, width=30)
             entry.grid(row=i, column=1, padx=5, pady=2)
             self.basis_entries.append(entry)
 
         # Buttons
         btn_frame = ttk.Frame(self)
         btn_frame.pack(fill='x', padx=5, pady=5)
-        ttk.Button(btn_frame, text=Language.tr('btn_check_basis'),
-                   command=self._check_basis).pack(side='left', padx=2)
-        ttk.Button(btn_frame, text=Language.tr('btn_decompose'),
-                   command=self._decompose).pack(side='left', padx=2)
+        self.btn_check = ttk.Button(btn_frame, text=Language.tr('btn_check_basis'),
+                                    command=self._check_basis)
+        self.btn_check.pack(side='left', padx=2)
+        self.btn_decompose = ttk.Button(btn_frame, text=Language.tr('btn_decompose'),
+                                        command=self._decompose)
+        self.btn_decompose.pack(side='left', padx=2)
 
         self.show_steps_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(self, text=Language.tr('show_steps'),
-                        variable=self.show_steps_var).pack(anchor='w', padx=5)
+        self.show_steps_check = ttk.Checkbutton(self, text=Language.tr('show_steps'),
+                                                variable=self.show_steps_var)
+        self.show_steps_check.pack(anchor='w', padx=5)
+
+    def update_language(self):
+        self.f1.config(text=Language.tr('vector_to_decompose'))
+        self.v_label.config(text=Language.tr('v_label'))
+        self.f2.config(text=Language.tr('basis_vectors'))
+        for i, lbl in enumerate(self.basis_labels):
+            lbl.config(text=f"{Language.tr('b_label')}{i+1}:")
+        self.btn_check.config(text=Language.tr('btn_check_basis'))
+        self.btn_decompose.config(text=Language.tr('btn_decompose'))
+        self.show_steps_check.config(text=Language.tr('show_steps'))
 
     def _parse_vector(self, entry_str):
         parts = entry_str.replace(',', ' ').split()
@@ -948,28 +992,46 @@ class GeometryPanel(ttk.Frame):
         self.engine = engine
         self.step_viewer = step_viewer
 
-        # Point inputs (4 points for tetrahedron)
-        f = ttk.LabelFrame(self, text=Language.tr('points_coordinates'))
-        f.pack(fill='x', padx=5, pady=5)
+        self.f = ttk.LabelFrame(self, text=Language.tr('points_coordinates'))
+        self.f.pack(fill='x', padx=5, pady=5)
         self.point_entries = []
+        self.point_labels = []
         for i, label in enumerate(['A', 'B', 'C', 'D']):
-            ttk.Label(f, text=f"{label}:").grid(row=i, column=0, padx=5, pady=2)
-            entry = ttk.Entry(f, width=30)
+            lbl = ttk.Label(self.f, text=f"{label}:")
+            lbl.grid(row=i, column=0, padx=5, pady=2)
+            self.point_labels.append(lbl)
+            entry = ttk.Entry(self.f, width=30)
             entry.grid(row=i, column=1, padx=5, pady=2)
-            ttk.Label(f, text="(x,y,z)").grid(row=i, column=2, padx=5)
             self.point_entries.append(entry)
+            fmt_lbl = ttk.Label(self.f, text=Language.tr('xyz_format'))
+            fmt_lbl.grid(row=i, column=2, padx=5)
+            if i == 0:
+                self.format_label = fmt_lbl  # keep reference for update
 
-        # Buttons
         btn_frame = ttk.Frame(self)
         btn_frame.pack(fill='x', padx=5, pady=5)
-        ttk.Button(btn_frame, text=Language.tr('btn_collinear_points'),
-                   command=self._check_points_collinear).pack(side='left', padx=2)
-        ttk.Button(btn_frame, text=Language.tr('btn_coplanar_points'),
-                   command=self._check_points_coplanar).pack(side='left', padx=2)
-        ttk.Button(btn_frame, text=Language.tr('btn_triangle_area'),
-                   command=self._triangle_area).pack(side='left', padx=2)
-        ttk.Button(btn_frame, text=Language.tr('btn_tetrahedron_volume'),
-                   command=self._tetrahedron_volume).pack(side='left', padx=2)
+        self.btn_collinear = ttk.Button(btn_frame, text=Language.tr('btn_collinear_points'),
+                                        command=self._check_points_collinear)
+        self.btn_collinear.pack(side='left', padx=2)
+        self.btn_coplanar = ttk.Button(btn_frame, text=Language.tr('btn_coplanar_points'),
+                                       command=self._check_points_coplanar)
+        self.btn_coplanar.pack(side='left', padx=2)
+        self.btn_area = ttk.Button(btn_frame, text=Language.tr('btn_triangle_area'),
+                                   command=self._triangle_area)
+        self.btn_area.pack(side='left', padx=2)
+        self.btn_volume = ttk.Button(btn_frame, text=Language.tr('btn_tetrahedron_volume'),
+                                     command=self._tetrahedron_volume)
+        self.btn_volume.pack(side='left', padx=2)
+
+    def update_language(self):
+        self.f.config(text=Language.tr('points_coordinates'))
+        for i, lbl in enumerate(self.point_labels):
+            lbl.config(text=f"{chr(65+i)}:")
+        self.format_label.config(text=Language.tr('xyz_format'))
+        self.btn_collinear.config(text=Language.tr('btn_collinear_points'))
+        self.btn_coplanar.config(text=Language.tr('btn_coplanar_points'))
+        self.btn_area.config(text=Language.tr('btn_triangle_area'))
+        self.btn_volume.config(text=Language.tr('btn_tetrahedron_volume'))
 
     def _parse_point(self, entry_str):
         """Parse point coordinates from entry string."""
@@ -1048,36 +1110,49 @@ class EigenPanel(ttk.Frame):
         super().__init__(parent)
         self.engine = engine
         self.step_viewer = step_viewer
-        self.get_matrix = matrix_widget_getter  # function that returns current matrix data
+        self.get_matrix = matrix_widget_getter
 
         # Matrix input section
-        input_frame = ttk.LabelFrame(self, text=Language.tr('input_matrix'))
-        input_frame.pack(fill='both', expand=True, padx=5, pady=5)
+        self.input_frame = ttk.LabelFrame(self, text=Language.tr('input_matrix'))
+        self.input_frame.pack(fill='both', expand=True, padx=5, pady=5)
 
-        # Use a MatrixWidget inside for convenience
-        self.matrix_widget = MatrixWidget(input_frame, title=Language.tr('matrix_a'), rows=3, cols=3)
+        self.matrix_widget = MatrixWidget(self.input_frame, title=Language.tr('matrix_a'), rows=3, cols=3)
         self.matrix_widget.pack(fill='both', expand=True, padx=5, pady=5)
 
         # Buttons
         btn_frame = ttk.Frame(self)
         btn_frame.pack(fill='x', padx=5, pady=5)
 
-        ttk.Button(btn_frame, text=Language.tr('btn_charpoly'),
-                   command=self._compute_charpoly).pack(side='left', padx=2)
-        ttk.Button(btn_frame, text=Language.tr('btn_eigenvalues'),
-                   command=self._compute_eigenvalues).pack(side='left', padx=2)
-        ttk.Button(btn_frame, text=Language.tr('btn_eigenvectors'),
-                   command=self._compute_eigenvectors).pack(side='left', padx=2)
-        ttk.Button(btn_frame, text=Language.tr('btn_diagonalize'),
-                   command=self._diagonalize).pack(side='left', padx=2)
-
-        # Copy from main matrix A button
-        ttk.Button(btn_frame, text=Language.tr('btn_copy_from_a'),
-                   command=self._copy_from_a).pack(side='left', padx=10)
+        self.btn_charpoly = ttk.Button(btn_frame, text=Language.tr('btn_charpoly'),
+                                       command=self._compute_charpoly)
+        self.btn_charpoly.pack(side='left', padx=2)
+        self.btn_eigenvals = ttk.Button(btn_frame, text=Language.tr('btn_eigenvalues'),
+                                        command=self._compute_eigenvalues)
+        self.btn_eigenvals.pack(side='left', padx=2)
+        self.btn_eigenvecs = ttk.Button(btn_frame, text=Language.tr('btn_eigenvectors'),
+                                        command=self._compute_eigenvectors)
+        self.btn_eigenvecs.pack(side='left', padx=2)
+        self.btn_diag = ttk.Button(btn_frame, text=Language.tr('btn_diagonalize'),
+                                   command=self._diagonalize)
+        self.btn_diag.pack(side='left', padx=2)
+        self.btn_copy = ttk.Button(btn_frame, text=Language.tr('btn_copy_from_a'),
+                                   command=self._copy_from_a)
+        self.btn_copy.pack(side='left', padx=10)
 
         self.show_steps_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(self, text=Language.tr('show_steps'),
-                        variable=self.show_steps_var).pack(anchor='w', padx=5)
+        self.show_steps_check = ttk.Checkbutton(self, text=Language.tr('show_steps'),
+                                                variable=self.show_steps_var)
+        self.show_steps_check.pack(anchor='w', padx=5)
+
+    def update_language(self):
+        self.input_frame.config(text=Language.tr('input_matrix'))
+        self.btn_charpoly.config(text=Language.tr('btn_charpoly'))
+        self.btn_eigenvals.config(text=Language.tr('btn_eigenvalues'))
+        self.btn_eigenvecs.config(text=Language.tr('btn_eigenvectors'))
+        self.btn_diag.config(text=Language.tr('btn_diagonalize'))
+        self.btn_copy.config(text=Language.tr('btn_copy_from_a'))
+        self.show_steps_check.config(text=Language.tr('show_steps'))
+        self.matrix_widget.update_language()
 
     def _get_matrix_data(self):
         return self.matrix_widget.get_matrix_data(symbolic=self.engine.get_symbolic_mode())
@@ -1169,10 +1244,10 @@ class EigenPanel(ttk.Frame):
                 self.step_viewer.add_step(step['step'] + 1, step['desc'])
                 if step.get('state') is not None:
                     self.step_viewer.add_matrix(step['state'], title=Language.tr('state'))
-        if isinstance(result, tuple) and len(result) == 2:  # (P, D)
+        if isinstance(result, tuple) and len(result) == 2:
             P, D = result
-            self.step_viewer.add_matrix(P, title="P (eigenvectors)")
-            self.step_viewer.add_matrix(D, title="D (eigenvalues)")
+            self.step_viewer.add_matrix(P, title=Language.tr('eigenvecs_matrix'))
+            self.step_viewer.add_matrix(D, title=Language.tr('eigenvals_diag'))
         elif isinstance(result, (list, np.ndarray, sp.Matrix)):
             self.step_viewer.add_matrix(result)
         else:
@@ -1185,17 +1260,20 @@ class VisualizationPanel(ttk.Frame):
         super().__init__(parent)
         self.engine = engine
 
-        # Control frame
         ctrl_frame = ttk.Frame(self)
         ctrl_frame.pack(fill='x', padx=5, pady=5)
 
-        ttk.Label(ctrl_frame, text=Language.tr('vectors_to_plot')).pack(side='left', padx=5)
+        self.vectors_label = ttk.Label(ctrl_frame, text=Language.tr('vectors_to_plot'))
+        self.vectors_label.pack(side='left', padx=5)
         self.vectors_entry = ttk.Entry(ctrl_frame, width=50)
         self.vectors_entry.pack(side='left', padx=5)
-        ttk.Label(ctrl_frame, text=Language.tr('comma_separated_vectors')).pack(side='left')
+        self.format_label = ttk.Label(ctrl_frame, text=Language.tr('comma_separated_vectors'))
+        self.format_label.pack(side='left')
 
-        ttk.Button(ctrl_frame, text=Language.tr('btn_plot'), command=self._plot).pack(side='left', padx=10)
-        ttk.Button(ctrl_frame, text=Language.tr('btn_clear'), command=self._clear).pack(side='left')
+        self.btn_plot = ttk.Button(ctrl_frame, text=Language.tr('btn_plot'), command=self._plot)
+        self.btn_plot.pack(side='left', padx=10)
+        self.btn_clear = ttk.Button(ctrl_frame, text=Language.tr('btn_clear'), command=self._clear)
+        self.btn_clear.pack(side='left')
 
         # Matplotlib figure
         self.fig = Figure(figsize=(5, 4), dpi=100)
@@ -1204,6 +1282,17 @@ class VisualizationPanel(ttk.Frame):
         self.canvas.get_tk_widget().pack(fill='both', expand=True, padx=5, pady=5)
 
         self._clear()
+
+    def update_language(self):
+        self.vectors_label.config(text=Language.tr('vectors_to_plot'))
+        self.format_label.config(text=Language.tr('comma_separated_vectors'))
+        self.btn_plot.config(text=Language.tr('btn_plot'))
+        self.btn_clear.config(text=Language.tr('btn_clear'))
+        self.ax.set_title(Language.tr('vector_plot'))
+        self.ax.set_xlabel('X')
+        self.ax.set_ylabel('Y')
+        self.ax.set_zlabel('Z')
+        self.canvas.draw()
 
     def _clear(self):
         self.ax.clear()
@@ -1258,24 +1347,32 @@ class GramSchmidtPanel(ttk.Frame):
         self.engine = engine
         self.step_viewer = step_viewer
 
-        # Input area
-        input_frame = ttk.LabelFrame(self, text=Language.tr('input_vectors'))
-        input_frame.pack(fill='both', expand=True, padx=5, pady=5)
+        self.input_frame = ttk.LabelFrame(self, text=Language.tr('input_vectors'))
+        self.input_frame.pack(fill='both', expand=True, padx=5, pady=5)
 
-        self.text = tk.Text(input_frame, height=8, font=('Consolas', 10))
+        self.text = tk.Text(self.input_frame, height=8, font=('Consolas', 10))
         self.text.pack(fill='both', expand=True, padx=5, pady=5)
-        ttk.Label(input_frame, text=Language.tr('vectors_format')).pack(anchor='w', padx=5)
+        self.format_label = ttk.Label(self.input_frame, text=Language.tr('vectors_format'))
+        self.format_label.pack(anchor='w', padx=5)
 
-        # Options
         opt_frame = ttk.Frame(self)
         opt_frame.pack(fill='x', padx=5, pady=5)
         self.normalize_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(opt_frame, text=Language.tr('normalize'), variable=self.normalize_var).pack(side='left')
+        self.normalize_check = ttk.Checkbutton(opt_frame, text=Language.tr('normalize'), variable=self.normalize_var)
+        self.normalize_check.pack(side='left')
         self.show_steps_var = tk.BooleanVar(value=True)
-        ttk.Checkbutton(opt_frame, text=Language.tr('show_steps'), variable=self.show_steps_var).pack(side='left', padx=10)
+        self.show_steps_check = ttk.Checkbutton(opt_frame, text=Language.tr('show_steps'), variable=self.show_steps_var)
+        self.show_steps_check.pack(side='left', padx=10)
 
-        # Button
-        ttk.Button(self, text=Language.tr('btn_gram_schmidt'), command=self._compute).pack(pady=5)
+        self.btn_compute = ttk.Button(self, text=Language.tr('btn_gram_schmidt'), command=self._compute)
+        self.btn_compute.pack(pady=5)
+
+    def update_language(self):
+        self.input_frame.config(text=Language.tr('input_vectors'))
+        self.format_label.config(text=Language.tr('vectors_format'))
+        self.normalize_check.config(text=Language.tr('normalize'))
+        self.show_steps_check.config(text=Language.tr('show_steps'))
+        self.btn_compute.config(text=Language.tr('btn_gram_schmidt'))
 
     def _compute(self):
         text = self.text.get('1.0', tk.END).strip()

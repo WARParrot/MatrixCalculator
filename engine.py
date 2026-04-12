@@ -10,6 +10,7 @@ from sympy.parsing.sympy_parser import (
     convert_xor
 )
 
+
 class MatrixEngine:
     def __init__(self):
         self.precision = config.ComputePrecision.AUTO

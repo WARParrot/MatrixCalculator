@@ -285,6 +285,16 @@ class MatrixCalculatorApp:
 
         self.notebook.tab(self.eigen_tab, text=Language.tr('eigen_tab'))
 
+        self.notebook.tab(self.gram_schmidt_tab, text=Language.tr('gram_schmidt_tab'))
+        self.notebook.tab(self.viz_tab, text=Language.tr('viz_tab'))
+
+        self.special_tab.update_language()
+        self.basis_tab.update_language()
+        self.geometry_tab.update_language()
+        self.eigen_tab.update_language()
+        self.gram_schmidt_tab.update_language()
+        self.viz_tab.update_language()
+
     def _update_slau_ui(self):
         op_display = self.operation_var.get()
         if op_display == Language.tr('op_solve'):
