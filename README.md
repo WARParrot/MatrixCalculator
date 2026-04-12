@@ -1,4 +1,3 @@
-```markdown
 # Matrix Calculator
 
 A feature‑rich desktop application for linear algebra and analytic geometry, combining **numeric** (NumPy/CuPy) and **symbolic** (SymPy) computation with detailed step‑by‑step solutions.
