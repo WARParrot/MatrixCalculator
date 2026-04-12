@@ -17,6 +17,8 @@ TRANSLATIONS = {
         'save_a': 'Сохранить A...',
         'save_b': 'Сохранить B...',
         'save_result': 'Сохранить результат',
+        'export_latex': 'Экспорт в LaTeX...',
+        'latex_export_success': 'Файл успешно сохранён',
 
         # Toolbar
         'operation': 'Операция:',
@@ -26,6 +28,7 @@ TRANSLATIONS = {
         'swap': '⇄ Поменять A↔B',
         'precision': 'Точность:',
         'language': 'Язык:',
+        'symbolic_mode': 'Символьный режим',
 
         # Matrix widget controls
         'rows': 'Строк:',
@@ -34,10 +37,20 @@ TRANSLATIONS = {
 
         # Vector widget controls
         'size': 'Размер:',
+        'load': 'Загрузить...',
+        'save': 'Сохранить...',
+        'load_vector': 'Загрузить {title}',
+        'save_vector': 'Сохранить {title}',
 
         # Notebook tabs
         'matrix_tab': 'Матрицы',
         'vector_tab': 'Векторы',
+        'special_tab': 'Специальные отношения',
+        'basis_tab': 'Базис и разложение',
+        'geometry_tab': 'Геометрия',
+        'eigen_tab': 'Собственные значения',
+        'gram_schmidt_tab': 'Ортогонализация',
+        'visualization_tab': 'Визуализация',
 
         # Status bar
         'ready': 'Готов',
@@ -45,6 +58,7 @@ TRANSLATIONS = {
         'cancel_request': 'Отмена...',
         'swap_success': 'Матрицы обменяны',
         'precision_set': 'Точность: {}',
+        'success': 'Успех',
 
         # Matrix titles
         'matrix_a': 'Матрица A',
@@ -56,7 +70,7 @@ TRANSLATIONS = {
         'vector_a': 'Вектор A',
         'vector_b': 'Вектор B',
 
-        # Step viewer header
+        # Step viewer
         'step_solution': 'Пошаговое решение / Результат',
         'result': 'Результат:',
         'step_prefix': 'Шаг {number}:',
@@ -71,9 +85,11 @@ TRANSLATIONS = {
         'op_det': 'Определитель A',
         'op_rank': 'Ранг A',
         'op_inv': 'Обращение A',
-        'op_solve': 'Решение СЛАУ (A*X = B)',
+        'op_solve_gauss': 'Решение СЛАУ (Гаусс)',
+        'op_solve_cramer': 'Решение СЛАУ (Крамер)',
+        'op_solve_inverse': 'Решение СЛАУ (Обратная матрица)',
 
-        # Vector operation button labels
+        # Vector operation buttons
         'btn_add': 'A + B',
         'btn_subtract': 'A - B',
         'btn_dot': 'A · B',
@@ -98,6 +114,65 @@ TRANSLATIONS = {
         'enter_scalar': 'Введите скалярное значение:',
         'operations': 'Операции с векторами',
 
+        # Special relations UI
+        'input_vectors': 'Входные векторы',
+        'comma_separated': '(через запятую/пробел)',
+        'parameter_name': 'Параметр:',
+        'btn_collinear_check': 'Коллинеарны?',
+        'btn_collinear_param': 'Найти λ для коллинеарности',
+        'btn_orthogonal': 'Ортогональны?',
+        'btn_coplanar': 'Компланарны?',
+        'collinearity_check': 'Проверка коллинеарности',
+        'collinearity_param': 'Параметр коллинеарности',
+        'orthogonality_check': 'Проверка ортогональности',
+        'coplanarity_check': 'Проверка компланарности',
+
+        # Basis UI
+        'vector_to_decompose': 'Вектор для разложения',
+        'basis_vectors': 'Базисные векторы',
+        'btn_check_basis': 'Проверить базис',
+        'btn_decompose': 'Разложить',
+        'basis_check': 'Проверка базиса',
+        'decomposition_result': 'Координаты в базисе',
+        'coordinates': 'Координаты',
+
+        # Geometry UI
+        'points_coordinates': 'Координаты точек',
+        'btn_collinear_points': 'Точки на одной прямой?',
+        'btn_coplanar_points': 'Точки в одной плоскости?',
+        'btn_triangle_area': 'Площадь треугольника (A,B,C)',
+        'btn_tetrahedron_volume': 'Объём тетраэдра (A,B,C,D)',
+        'points_collinear': 'Коллинеарность точек',
+        'points_coplanar': 'Компланарность точек',
+        'triangle_area': 'Площадь треугольника',
+        'tetrahedron_volume': 'Объём тетраэдра',
+
+        # Eigenvalues UI
+        'input_matrix': 'Матрица',
+        'btn_charpoly': 'Характеристический полином',
+        'btn_eigenvalues': 'Собственные значения',
+        'btn_eigenvectors': 'Собственные векторы',
+        'btn_diagonalize': 'Диагонализация',
+        'btn_copy_from_a': '← Копировать из A',
+        'charpoly_result': 'Характеристический полином',
+        'eigenvalues_result': 'Собственные значения',
+        'eigenvectors_result': 'Собственные векторы',
+        'diagonalization_result': 'Диагонализация',
+
+        # Gram-Schmidt UI
+        'normalize': 'Нормировать',
+        'btn_gram_schmidt': 'Ортогонализовать',
+        'gram_schmidt_result': 'Результат ортогонализации',
+        'orthogonal_basis': 'Ортогональный базис',
+
+        # Visualization UI
+        'vectors_to_plot': 'Векторы:',
+        'comma_separated_vectors': '(x,y,z; ...)',
+        'btn_plot': 'Построить',
+        'btn_clear': 'Очистить',
+        'vector_plot': 'Векторы в 3D',
+        'vectors_format': 'Каждый вектор с новой строки: x y z (или x,y,z)',
+
         # Messages and errors
         'error': 'Ошибка',
         'warning': 'Предупреждение',
@@ -112,7 +187,7 @@ TRANSLATIONS = {
         'gpu_available': ' и CuPy',
         'gpu_not_available': '',
 
-        # Engine error messages (matrix)
+        # Engine errors (matrix)
         'err_square_matrix': '{operation} требует квадратную матрицу. Получена форма {shape}',
         'err_same_shape': '{operation} требует матрицы одинаковой формы. Получены {shape1} и {shape2}',
         'err_incompatible_mul': 'Несовместимые размеры для умножения: {shape1} и {shape2}',
@@ -120,8 +195,9 @@ TRANSLATIONS = {
         'err_inversion_failed': 'Обращение не удалось: {msg}',
         'err_system_rows': 'Матрица A и правая часть B должны иметь одинаковое количество строк',
         'err_no_unique_solution': 'Система не имеет единственного решения: {msg}',
+        'err_not_diagonalizable': 'Матрица не диагонализируема',
 
-        # Engine error messages (vector)
+        # Engine errors (vector)
         'err_vector_1d': 'Вектор должен быть одномерным (получена форма {shape})',
         'err_vector_same_len': 'Векторы должны иметь одинаковую длину для {op} (получено {len1} и {len2})',
         'err_cross_3d': 'Векторное произведение требует трёхмерные векторы (получено {len1} и {len2})',
@@ -129,6 +205,12 @@ TRANSLATIONS = {
         'err_projection_zero_vec': 'Невозможно спроецировать на нулевой вектор',
         'err_angle_zero_vec': 'Угол не определён для нулевого вектора',
         'err_triple_3d': 'Смешанное произведение требует три трёхмерных вектора',
+        'err_basis_dimension': 'Все векторы должны быть одной размерности',
+        'err_basis_count': 'Требуется {expected} векторов, получено {got}',
+        'err_3d_required': 'Требуются 3D векторы',
+        'err_coplanar_3d': 'Компланарность определена только для 3D векторов',
+        'err_vectors_same_dim': 'Все векторы должны быть одинаковой размерности',
+        'err_cramer_single_rhs': 'Метод Крамера поддерживает только один столбец правой части',
 
         # Matrix step descriptions
         'step_initial': 'Начальная матрица',
@@ -142,8 +224,30 @@ TRANSLATIONS = {
         'step_diag_product': 'Произведение диагональных элементов = {product:.6f}, знак = {sign}',
         'step_det_result': 'Определитель = {det:.6f}',
         'step_rank_final': 'Ранг матрицы = {rank}',
+        'step_rank_symbolic': 'Ранг матрицы (символьный): {rank}',
 
-        # Vector step descriptions
+        # Determinant symbolic steps
+        'step_det_1x1': 'Определитель 1×1: det = {val}',
+        'step_det_2x2': 'Определитель 2×2: {a}·{d} - {b}·{c} = {det}',
+        'step_det_3x3_expand': 'Вычисляем по правилу Саррюса или разложением...',
+        'step_det_symbolic': 'Определитель (символьный): {det}',
+
+        # Cramer's Rule steps
+        'step_cramer_init': '=== Решение методом Крамера ===',
+        'step_cramer_det_A': 'Шаг 1: определитель матрицы A: det(A) = {det}',
+        'step_cramer_replace': 'Шаг {step}: заменяем столбец {col} на B, det(A{col}) = {det_i}, x{col} = {det_i} / '
+                               'det(A) = {xi}',
+        'step_cramer_result': 'Решение системы: x = {x}',
+
+        # Inverse matrix method steps
+        'step_inverse_init': '=== Решение через обратную матрицу ===',
+        'step_inverse_compute': 'Шаг 1: находим обратную матрицу A⁻¹:',
+        'step_inverse_multiply': 'Шаг 2: умножаем A⁻¹ на B:',
+        'step_inverse_component': '  x{i} = {expr} = {val}',
+        'step_inverse_result': 'Решение: x = {x}',
+        'step_inverse_result_matrix': 'Результирующая матрица X:\n{x}',
+
+        # Vector basic steps
         'step_vector_add_init': 'Сложение векторов: {v1} + {v2}',
         'step_vector_add_result': 'Результат: {res}',
         'step_vector_sub_init': 'Вычитание векторов: {v1} - {v2}',
@@ -152,170 +256,116 @@ TRANSLATIONS = {
         'step_vector_scale_result': 'Результат: {res}',
         'step_dot_init': 'Скалярное произведение {v1} и {v2}',
         'step_dot_products': 'Поэлементные произведения: {prods}',
-        'step_dot_sum': 'Сумма произведений = {sum}',
+        'step_dot_products_detail': 'Поэлементные произведения: {detail} = {prods}',
+        'step_dot_sum': 'Сумма произведений = {sum:.6f}',
         'step_cross_init': 'Векторное произведение {v1} × {v2}',
+        'step_cross_determinant': 'Определитель: i·({i}) - j·({j}) + k·({k})',
+        'step_cross_determinant_numeric': 'Определитель: |i  j  k|\n|{a1} {a2} {a3}|\n|{b1} {b2} {b3}|',
         'step_cross_components': 'Компоненты: x={x}, y={y}, z={z}',
+        'step_cross_components_calc': 'Компоненты:\n  x = {x_expr}\n  y = {y_expr}\n  z = {z_expr}',
         'step_cross_result': 'Результирующий вектор: {res}',
         'step_norm_init': 'Вычисление нормы вектора {v}',
         'step_norm_squares': 'Квадраты элементов: {squares}',
-        'step_norm_sum_sq': 'Сумма квадратов = {sum_sq}',
-        'step_norm_result': 'Норма = {norm}',
+        'step_norm_sum_sq': 'Сумма квадратов = {sum_sq:.6f}',
+        'step_norm_result': 'Норма = {norm:.6f}',
         'step_normalize_init': 'Нормализация вектора {v}',
-        'step_normalize_norm': 'Норма = {norm}',
+        'step_normalize_norm': 'Норма = {norm:.6f}',
         'step_normalize_result': 'Единичный вектор: {unit}',
         'step_proj_init': 'Проекция {v1} на {v2}',
-        'step_proj_dot': 'Скалярное произведение (v1·v2) = {dot}',
-        'step_proj_norm_sq': '||v2||² = {norm_sq}',
-        'step_proj_scalar': 'Скалярный коэффициент = {scalar}',
+        'step_proj_dot': 'Скалярное произведение (v1·v2) = {dot:.6f}',
+        'step_proj_norm_sq': '||v2||² = {norm_sq:.6f}',
+        'step_proj_scalar': 'Скалярный коэффициент = {scalar:.6f}',
         'step_proj_result': 'Вектор проекции: {proj}',
         'step_angle_init': 'Угол между {v1} и {v2}',
-        'step_angle_dot': 'Скалярное произведение = {dot}',
-        'step_angle_norms': '||v1|| = {norm1}, ||v2|| = {norm2}',
-        'step_angle_cos': 'cos(θ) = {cos}',
-        'step_angle_rad': 'θ = {rad} рад',
-        'step_angle_deg': 'θ = {deg}°',
+        'step_angle_dot': 'Скалярное произведение = {dot:.6f}',
+        'step_angle_norms': '||v1|| = {norm1:.6f}, ||v2|| = {norm2:.6f}',
+        'step_angle_cos': 'cos(θ) = {cos:.6f}',
+        'step_angle_rad': 'θ = {rad:.6f} рад',
+        'step_angle_deg': 'θ = {deg:.6f}°',
+
+        # Triple product steps
         'step_triple_init': 'Смешанное произведение: {v1} · ({v2} × {v3})',
-        'step_triple_cross': 'Векторное произведение ({v2} × {v3}) = {cross}',
-        'step_triple_dot': 'Скалярное произведение = {dot}',
-
-        'step_dot_products_detail': 'Поэлементные произведения: {detail} = {prods}',
-        'step_cross_determinant': 'Определитель: i·({i}) - j·({j}) + k·({k})',
-        'step_cross_determinant_numeric': 'Определитель: |i  j  k|\n|{a1} {a2} {a3}|\n|{b1} {b2} {b3}|',
-        'step_cross_components_calc': 'Компоненты:\n  x = {x_expr}\n  y = {y_expr}\n  z = {z_expr}',
-
         'step_triple_cross_start': '1. Вычисляем векторное произведение {v2} × {v3}:',
         'step_triple_cross_start_numeric': '1. Векторное произведение B × C:',
         'step_triple_cross_components_calc': '   x = {x_expr}\n   y = {y_expr}\n   z = {z_expr}',
+        'step_triple_cross': 'Векторное произведение ({v2} × {v3}) = {cross}',
         'step_triple_dot_start': '2. Скалярное произведение {v1} · ({v2} × {v3}):',
         'step_triple_dot_start_numeric': '2. Скалярное произведение A · (B × C):',
-        'step_triple_dot_products_detail': '   Поэлементно: {detail} = {prods}',
         'step_triple_dot_products': '   Произведения: {prods}',
+        'step_triple_dot_products_detail': '   Поэлементно: {detail} = {prods}',
         'step_triple_dot_sum': '   Сумма = {sum:.6f}',
+        'step_triple_dot': 'Скалярное произведение = {dot:.6f}',
         'step_triple_result': 'Результат (смешанное произведение) = {result}',
         'step_triple_result_volume': 'Результат: A·(B×C) = {result:.6f}\nОбъём параллелепипеда = |{result:.6f}| = {'
                                      'volume:.6f}',
 
-        'symbolic_mode': 'Символьный режим',
-
-        # Special relations
-        'input_vectors': 'Входные векторы',
-        'comma_separated': '(через запятую/пробел)',
-        'parameter_name': 'Параметр:',
-        'btn_collinear_check': 'Коллинеарны?',
-        'btn_collinear_param': 'Найти λ для коллинеарности',
-        'btn_orthogonal': 'Ортогональны?',
-        'btn_coplanar': 'Компланарны?',
-        'collinearity_check': 'Проверка коллинеарности',
-        'collinearity_param': 'Параметр коллинеарности',
-        'orthogonality_check': 'Проверка ортогональности',
-        'coplanarity_check': 'Проверка компланарности',
-
-        # Step descriptions for collinearity
+        # Collinearity steps
         'step_collinear_init': 'Векторы: a = {v1}, b = {v2}',
+        'step_collinear_false_dim': 'Векторы разной размерности → не коллинеарны',
+        'step_collinear_2d_det': '2D определитель = {det}',
+        'step_collinear_2d_det_numeric': '2D определитель = {det:.6f}',
         'step_collinear_2d_eq': 'Условие коллинеарности (2D): {eq}',
-        'step_collinear_3d_cross': 'Векторное произведение: a × b = {cross}',
+        'step_collinear_3d_cross': 'Векторное произведение = {cross}',
+        'step_collinear_3d_cross_numeric': 'Векторное произведение = {cross}',
         'step_collinear_3d_eq': 'Приравниваем компоненту к нулю: {eq}',
         'step_collinear_solve': 'Решаем относительно {param}: {solutions}',
+        'step_collinear_result': 'Результат: {result}',
 
-        # Basis and decomposition
-        'vector_to_decompose': 'Вектор для разложения',
-        'basis_vectors': 'Базисные векторы',
-        'btn_check_basis': 'Проверить базис',
-        'btn_decompose': 'Разложить',
-        'basis_check': 'Проверка базиса',
-        'decomposition_result': 'Координаты в базисе',
-        'coordinates': 'Координаты',
+        # Orthogonality steps
+        'step_orthogonal_dot': 'Скалярное произведение = {dot}',
+        'step_orthogonal_result': 'Ортогональны? {result}',
 
-        'err_basis_dimension': 'Все векторы должны быть одной размерности',
-        'err_basis_count': 'Требуется {expected} векторов, получено {got}',
+        # Coplanarity steps
+        'step_coplanar_cross': 'Векторное произведение v2×v3 = {cross}',
+        'step_coplanar_cross_numeric': 'Векторное произведение = {cross}',
+        'step_coplanar_triple': 'Смешанное произведение = {triple}',
+        'step_coplanar_triple_numeric': 'Смешанное произведение = {triple:.6f}',
+        'step_coplanar_result': 'Компланарны? {result}',
 
+        # Basis steps
+        'step_basis_det': 'Определитель матрицы из векторов = {det}',
+        'step_basis_det_numeric': 'Определитель = {det:.6f}',
+        'step_basis_result': 'Образуют базис? {result}',
+
+        # Decomposition steps
         'step_decompose_init': 'Разложение вектора {v} по базису {basis}',
         'step_decompose_matrix': 'Матрица перехода (базис по столбцам):\n{matrix}',
-        'step_decompose_solve': 'Решаем систему {system}',
-        'step_decompose_result': 'Коэффициенты: {coeffs}',
         'step_decompose_matrix_numeric': 'Матрица перехода:\n{matrix}',
+        'step_decompose_system': 'Система уравнений:\n{system}',
+        'step_decompose_solve': 'Решаем систему',
         'step_decompose_solve_numeric': 'Решаем линейную систему',
+        'step_decompose_result': 'Коэффициенты: {coeffs}',
         'step_decompose_result_numeric': 'Координаты: {coeffs}',
 
-        # Transition matrix
+        # Transition matrix steps
         'step_transition_init': 'Построение матрицы перехода',
         'step_transition_formula': 'P = (новый базис)⁻¹ · (старый базис)',
         'step_transition_matrix': 'Матрица перехода:\n{matrix}',
 
-        # Geometry
-        'points_coordinates': 'Координаты точек',
-        'btn_collinear_points': 'Точки на одной прямой?',
-        'btn_coplanar_points': 'Точки в одной плоскости?',
-        'btn_triangle_area': 'Площадь треугольника (A,B,C)',
-        'btn_tetrahedron_volume': 'Объём тетраэдра (A,B,C,D)',
-        'points_collinear': 'Коллинеарность точек',
-        'points_coplanar': 'Компланарность точек',
-        'triangle_area': 'Площадь треугольника',
-        'tetrahedron_volume': 'Объём тетраэдра',
-        'err_3d_required': 'Требуются 3D векторы',
-        'err_coplanar_3d': 'Компланарность определена только для 3D векторов',
-
-        'special_tab': 'Специальные отношения',
-        'basis_tab': 'Базис и разложение',
-        'geometry_tab': 'Геометрия',
-
-        # Eigenvalues
-        'eigen_tab': 'Собственные значения',
-        'input_matrix': 'Матрица',
-        'btn_charpoly': 'Характеристический полином',
-        'btn_eigenvalues': 'Собственные значения',
-        'btn_eigenvectors': 'Собственные векторы',
-        'btn_diagonalize': 'Диагонализация',
-        'btn_copy_from_a': '← Копировать из A',
-        'charpoly_result': 'Характеристический полином',
-        'eigenvalues_result': 'Собственные значения',
-        'eigenvectors_result': 'Собственные векторы',
-        'diagonalization_result': 'Диагонализация',
-        'err_not_diagonalizable': 'Матрица не диагонализируема',
-
-        # Step descriptions
+        # Eigenvalue steps
         'step_charpoly_init': 'Построение характеристического полинома det(A - {var}I)',
         'step_charpoly_matrix': 'Матрица A - {var}I:\n{matrix}',
-        'step_charpoly_det': 'Определитель = {poly}',
         'step_charpoly_matrix_numeric': 'Матрица A:\n{matrix}',
+        'step_charpoly_det': 'Определитель = {poly}',
         'step_charpoly_coeffs': 'Коэффициенты характеристического полинома: {coeffs}',
-
         'step_eigenvals_init': 'Поиск собственных значений',
         'step_eigenvals_charpoly': 'Характеристический полином: {poly}',
-        'step_eigenvals_roots': 'Корни (собственные значения): {vals}',
         'step_eigenvals_charpoly_numeric': 'Коэффициенты: {coeffs}',
+        'step_eigenvals_roots': 'Корни (собственные значения): {vals}',
         'step_eigenvals_result': 'Собственные значения: {vals}',
-
         'step_eigenvecs_init': 'Поиск собственных векторов',
         'step_eigenvecs_charpoly': 'Характеристический полином: {poly}',
+        'step_eigenvecs_vals': 'Собственные значения: {vals}',
         'step_eigenvecs_for_val': 'Для λ = {val} (кратность {mult}):',
         'step_eigenvecs_vec': '  Вектор {idx}: {vec}',
-        'step_eigenvecs_vals': 'Собственные значения: {vals}',
         'step_eigenvecs_matrix': 'Матрица собственных векторов (по столбцам):\n{matrix}',
-
         'step_diag_init': 'Диагонализация матрицы',
         'step_diag_eigenvals': 'Собственные значения (диагональ D):\n{vals}',
-        'step_diag_eigenvecs': 'Матрица P (собственные векторы):\n{matrix}',
-        'step_diag_verify': 'Проверка: P·D·P⁻¹ = {product}',
         'step_diag_eigenvals_numeric': 'Собственные значения: {vals}',
+        'step_diag_eigenvecs': 'Матрица P (собственные векторы):\n{matrix}',
         'step_diag_eigenvecs_numeric': 'Матрица P:\n{matrix}',
+        'step_diag_verify': 'Проверка: P·D·P⁻¹ = {product}',
         'step_diag_verify_numeric': 'Проверка: P·D·P⁻¹ =\n{product}',
-
-        'gram_schmidt_tab': 'Ортогонализация',
-        'visualization_tab': 'Визуализация',
-        'vectors_to_plot': 'Векторы:',
-        'comma_separated_vectors': '(x,y,z; ...)',
-        'btn_plot': 'Построить',
-        'btn_clear': 'Очистить',
-        'vector_plot': 'Векторы в 3D',
-        'vectors_format': 'Каждый вектор с новой строки: x y z (или x,y,z)',
-        'normalize': 'Нормировать',
-        'btn_gram_schmidt': 'Ортогонализовать',
-        'gram_schmidt_result': 'Результат ортогонализации',
-        'orthogonal_basis': 'Ортогональный базис',
-        'export_latex': 'Экспорт в LaTeX...',
-        'latex_export_success': 'Файл успешно сохранён',
-        'success': 'Успех',
 
         # Gram-Schmidt steps
         'step_gram_schmidt_init': 'Начальные векторы: {vectors}',
@@ -325,35 +375,25 @@ TRANSLATIONS = {
         'step_gram_schmidt_orthogonal': '  Ортогональный вектор u{idx} = {u}',
         'step_gram_schmidt_normalize': '  Нормируем e{idx} = {e}',
         'step_gram_schmidt_result': 'Результирующий базис: {basis}',
-        'err_vectors_same_dim': 'Все векторы должны быть одинаковой размерности',
 
-        'op_solve_gauss': 'Решение СЛАУ (Гаусс)',
-        'op_solve_cramer': 'Решение СЛАУ (Крамер)',
-        'op_solve_inverse': 'Решение СЛАУ (Обратная матрица)',
-
-        'step_cramer_init': 'Решение методом Крамера',
-        'step_cramer_det_A': 'Определитель матрицы A: det(A) = {det}',
-        'step_cramer_replace': 'Заменяем столбец {col}: det(A_{col}) = {det_i}, x_{col} = {xi}',
-        'step_cramer_result': 'Решение: x = {x}',
-
-        'step_inverse_init': 'Решение через обратную матрицу',
-        'step_inverse_compute': 'Обратная матрица A⁻¹:',
-        'step_inverse_multiply': 'Умножаем A⁻¹ на B',
-        'step_inverse_result': 'Решение: x = {x}',
-
-        'err_cramer_single_rhs': 'Метод Крамера поддерживает только один столбец правой части',
-        'step_cramer_init': '=== Решение методом Крамера ===',
-        'step_cramer_det_A': 'Шаг 1: определитель матрицы A: det(A) = {det}',
-        'step_cramer_replace': 'Шаг {step}: заменяем столбец {col} на B, det(A{col}) = {det_i}, x{col} = {det_i} / '
-                               'det(A) = {xi}',
-        'step_cramer_result': 'Решение системы: x = {x}',
-
-        'step_inverse_init': '=== Решение через обратную матрицу ===',
-        'step_inverse_compute': 'Шаг 1: находим обратную матрицу A⁻¹:',
-        'step_inverse_multiply': 'Шаг 2: умножаем A⁻¹ на B:',
-        'step_inverse_component': '  x{i} = {expr} = {val}',
-        'step_inverse_result': 'Решение: x = {x}',
-        'step_inverse_result_matrix': 'Результирующая матрица X:\n{x}',
+        'step_points_collinear_init': 'Проверка коллинеарности точек A={A}, B={B}, C={C}',
+        'step_points_coplanar_init': 'Проверка компланарности точек A={A}, B={B}, C={C}, D={D}',
+        'step_triangle_area_init': 'Вычисление площади треугольника с вершинами A={A}, B={B}, C={C}',
+        'step_triangle_area_vectors': 'Векторы сторон: AB = {AB}, AC = {AC}',
+        'step_triangle_area_cross': 'Векторное произведение AB × AC = {cross}',
+        'step_triangle_area_result': 'Площадь S = 0.5 * |AB × AC| = {area:.6f}',
+        'step_tetrahedron_volume_init': 'Вычисление объёма тетраэдра A={A}, B={B}, C={C}, D={D}',
+        'step_tetrahedron_volume_vectors': 'Векторы рёбер: AB = {AB}, AC = {AC}, AD = {AD}',
+        'step_tetrahedron_volume_cross': 'Векторное произведение AC × AD = {cross}',
+        'step_tetrahedron_volume_triple': 'Смешанное произведение AB · (AC × AD) = {triple}',
+        'step_tetrahedron_volume_result': 'Объём V = |{triple}| / 6 = {volume:.6f}',
+        'warn_heavy_symbolic': 'Символьная операция над матрицей {size}×{size} может занять много времени. Продолжить?',
+        'warn_heavy_symbolic_op': 'Символьная операция «{op}» над матрицей {size}×{size} может занять много времени и '
+                                  'ресурсов. Продолжить?',
+        'symbolic_mode_long': 'символьном',
+        'numeric_mode': 'числовом',
+        'warn_heavy_operation_detailed': 'Операция «{op}» над матрицей {size}×{size} в {mode} режиме может '
+                                         'выполняться очень долго (возможно, бесконечно). Продолжить?',
     },
     'en': {
         # Application
@@ -369,6 +409,8 @@ TRANSLATIONS = {
         'save_a': 'Save A...',
         'save_b': 'Save B...',
         'save_result': 'Save Result',
+        'export_latex': 'Export to LaTeX...',
+        'latex_export_success': 'File saved successfully',
 
         # Toolbar
         'operation': 'Operation:',
@@ -378,6 +420,7 @@ TRANSLATIONS = {
         'swap': '⇄ Swap A↔B',
         'precision': 'Precision:',
         'language': 'Language:',
+        'symbolic_mode': 'Symbolic Mode',
 
         # Matrix widget controls
         'rows': 'Rows:',
@@ -386,10 +429,20 @@ TRANSLATIONS = {
 
         # Vector widget controls
         'size': 'Size:',
+        'load': 'Load...',
+        'save': 'Save...',
+        'load_vector': 'Load {title}',
+        'save_vector': 'Save {title}',
 
         # Notebook tabs
         'matrix_tab': 'Matrices',
         'vector_tab': 'Vectors',
+        'special_tab': 'Special Relations',
+        'basis_tab': 'Basis & Decomposition',
+        'geometry_tab': 'Geometry',
+        'eigen_tab': 'Eigenvalues',
+        'gram_schmidt_tab': 'Gram-Schmidt',
+        'visualization_tab': 'Visualization',
 
         # Status bar
         'ready': 'Ready',
@@ -397,6 +450,7 @@ TRANSLATIONS = {
         'cancel_request': 'Canceling...',
         'swap_success': 'Matrices swapped',
         'precision_set': 'Precision: {}',
+        'success': 'Success',
 
         # Matrix titles
         'matrix_a': 'Matrix A',
@@ -408,7 +462,7 @@ TRANSLATIONS = {
         'vector_a': 'Vector A',
         'vector_b': 'Vector B',
 
-        # Step viewer header
+        # Step viewer
         'step_solution': 'Step-by-step solution / Result',
         'result': 'Result:',
         'step_prefix': 'Step {number}:',
@@ -423,9 +477,11 @@ TRANSLATIONS = {
         'op_det': 'Determinant A',
         'op_rank': 'Rank A',
         'op_inv': 'Inverse A',
-        'op_solve': 'Solve SLAE (A*X = B)',
+        'op_solve_gauss': 'Solve SLAE (Gauss)',
+        'op_solve_cramer': 'Solve SLAE (Cramer)',
+        'op_solve_inverse': 'Solve SLAE (Inverse)',
 
-        # Vector operation button labels
+        # Vector operation buttons
         'btn_add': 'A + B',
         'btn_subtract': 'A - B',
         'btn_dot': 'A · B',
@@ -450,6 +506,65 @@ TRANSLATIONS = {
         'enter_scalar': 'Enter scalar value:',
         'operations': 'Vector Operations',
 
+        # Special relations UI
+        'input_vectors': 'Input Vectors',
+        'comma_separated': '(comma/space separated)',
+        'parameter_name': 'Parameter:',
+        'btn_collinear_check': 'Collinear?',
+        'btn_collinear_param': 'Find λ for collinearity',
+        'btn_orthogonal': 'Orthogonal?',
+        'btn_coplanar': 'Coplanar?',
+        'collinearity_check': 'Collinearity Check',
+        'collinearity_param': 'Collinearity Parameter',
+        'orthogonality_check': 'Orthogonality Check',
+        'coplanarity_check': 'Coplanarity Check',
+
+        # Basis UI
+        'vector_to_decompose': 'Vector to decompose',
+        'basis_vectors': 'Basis vectors',
+        'btn_check_basis': 'Check basis',
+        'btn_decompose': 'Decompose',
+        'basis_check': 'Basis Check',
+        'decomposition_result': 'Coordinates in basis',
+        'coordinates': 'Coordinates',
+
+        # Geometry UI
+        'points_coordinates': 'Point Coordinates',
+        'btn_collinear_points': 'Points collinear?',
+        'btn_coplanar_points': 'Points coplanar?',
+        'btn_triangle_area': 'Triangle Area (A,B,C)',
+        'btn_tetrahedron_volume': 'Tetrahedron Volume (A,B,C,D)',
+        'points_collinear': 'Points Collinearity',
+        'points_coplanar': 'Points Coplanarity',
+        'triangle_area': 'Triangle Area',
+        'tetrahedron_volume': 'Tetrahedron Volume',
+
+        # Eigenvalues UI
+        'input_matrix': 'Matrix',
+        'btn_charpoly': 'Characteristic Polynomial',
+        'btn_eigenvalues': 'Eigenvalues',
+        'btn_eigenvectors': 'Eigenvectors',
+        'btn_diagonalize': 'Diagonalize',
+        'btn_copy_from_a': '← Copy from A',
+        'charpoly_result': 'Characteristic Polynomial',
+        'eigenvalues_result': 'Eigenvalues',
+        'eigenvectors_result': 'Eigenvectors',
+        'diagonalization_result': 'Diagonalization',
+
+        # Gram-Schmidt UI
+        'normalize': 'Normalize',
+        'btn_gram_schmidt': 'Orthogonalize',
+        'gram_schmidt_result': 'Gram-Schmidt Result',
+        'orthogonal_basis': 'Orthogonal Basis',
+
+        # Visualization UI
+        'vectors_to_plot': 'Vectors:',
+        'comma_separated_vectors': '(x,y,z; ...)',
+        'btn_plot': 'Plot',
+        'btn_clear': 'Clear',
+        'vector_plot': '3D Vectors',
+        'vectors_format': 'One vector per line: x y z (or x,y,z)',
+
         # Messages and errors
         'error': 'Error',
         'warning': 'Warning',
@@ -464,7 +579,7 @@ TRANSLATIONS = {
         'gpu_available': ' and CuPy',
         'gpu_not_available': '',
 
-        # Engine error messages (matrix)
+        # Engine errors (matrix)
         'err_square_matrix': '{operation} requires a square matrix. Got shape {shape}',
         'err_same_shape': '{operation} requires matrices of the same shape. Got {shape1} and {shape2}',
         'err_incompatible_mul': 'Incompatible shapes for multiplication: {shape1} and {shape2}',
@@ -472,8 +587,9 @@ TRANSLATIONS = {
         'err_inversion_failed': 'Inversion failed: {msg}',
         'err_system_rows': 'Matrix A and RHS B must have the same number of rows',
         'err_no_unique_solution': 'System has no unique solution: {msg}',
+        'err_not_diagonalizable': 'Matrix is not diagonalizable',
 
-        # Engine error messages (vector)
+        # Engine errors (vector)
         'err_vector_1d': 'Vector must be 1‑dimensional (got shape {shape})',
         'err_vector_same_len': 'Vectors must have same length for {op} (got {len1} and {len2})',
         'err_cross_3d': 'Cross product requires 3D vectors (got {len1} and {len2})',
@@ -481,6 +597,12 @@ TRANSLATIONS = {
         'err_projection_zero_vec': 'Cannot project onto zero vector',
         'err_angle_zero_vec': 'Angle undefined for zero vector',
         'err_triple_3d': 'Triple product requires three 3D vectors',
+        'err_basis_dimension': 'All vectors must have same dimension',
+        'err_basis_count': 'Expected {expected} vectors, got {got}',
+        'err_3d_required': '3D vectors required',
+        'err_coplanar_3d': 'Coplanarity defined only for 3D vectors',
+        'err_vectors_same_dim': 'All vectors must have the same dimension',
+        'err_cramer_single_rhs': 'Cramer\'s rule supports only a single right-hand side column',
 
         # Matrix step descriptions
         'step_initial': 'Initial matrix',
@@ -494,8 +616,30 @@ TRANSLATIONS = {
         'step_diag_product': 'Product of diagonal elements = {product:.6f}, sign = {sign}',
         'step_det_result': 'Determinant = {det:.6f}',
         'step_rank_final': 'Matrix rank = {rank}',
+        'step_rank_symbolic': 'Matrix rank (symbolic): {rank}',
 
-        # Vector step descriptions
+        # Determinant symbolic steps
+        'step_det_1x1': 'Determinant 1×1: det = {val}',
+        'step_det_2x2': 'Determinant 2×2: {a}·{d} - {b}·{c} = {det}',
+        'step_det_3x3_expand': 'Computing via Sarrus rule or expansion...',
+        'step_det_symbolic': 'Determinant (symbolic): {det}',
+
+        # Cramer's Rule steps
+        'step_cramer_init': '=== Solving with Cramer\'s Rule ===',
+        'step_cramer_det_A': 'Step 1: determinant of A: det(A) = {det}',
+        'step_cramer_replace': 'Step {step}: replace column {col} with B, det(A{col}) = {det_i}, x{col} = {det_i} / '
+                               'det(A) = {xi}',
+        'step_cramer_result': 'Solution: x = {x}',
+
+        # Inverse matrix method steps
+        'step_inverse_init': '=== Solving with Inverse Matrix ===',
+        'step_inverse_compute': 'Step 1: compute inverse matrix A⁻¹:',
+        'step_inverse_multiply': 'Step 2: multiply A⁻¹ by B:',
+        'step_inverse_component': '  x{i} = {expr} = {val}',
+        'step_inverse_result': 'Solution: x = {x}',
+        'step_inverse_result_matrix': 'Resulting matrix X:\n{x}',
+
+        # Vector basic steps
         'step_vector_add_init': 'Adding vectors: {v1} + {v2}',
         'step_vector_add_result': 'Result: {res}',
         'step_vector_sub_init': 'Subtracting vectors: {v1} - {v2}',
@@ -504,171 +648,118 @@ TRANSLATIONS = {
         'step_vector_scale_result': 'Result: {res}',
         'step_dot_init': 'Dot product of {v1} and {v2}',
         'step_dot_products': 'Element‑wise products: {prods}',
-        'step_dot_sum': 'Sum of products = {sum}',
+        'step_dot_products_detail': 'Element-wise products: {detail} = {prods}',
+        'step_dot_sum': 'Sum of products = {sum:.6f}',
         'step_cross_init': 'Cross product of {v1} × {v2}',
+        'step_cross_determinant': 'Determinant: i·({i}) - j·({j}) + k·({k})',
+        'step_cross_determinant_numeric': 'Determinant: |i  j  k|\n|{a1} {a2} {a3}|\n|{b1} {b2} {b3}|',
         'step_cross_components': 'Components: x={x}, y={y}, z={z}',
+        'step_cross_components_calc': 'Components:\n  x = {x_expr}\n  y = {y_expr}\n  z = {z_expr}',
         'step_cross_result': 'Result vector: {res}',
         'step_norm_init': 'Computing norm of {v}',
         'step_norm_squares': 'Squares: {squares}',
-        'step_norm_sum_sq': 'Sum of squares = {sum_sq}',
-        'step_norm_result': 'Norm = {norm}',
+        'step_norm_sum_sq': 'Sum of squares = {sum_sq:.6f}',
+        'step_norm_result': 'Norm = {norm:.6f}',
         'step_normalize_init': 'Normalizing vector {v}',
-        'step_normalize_norm': 'Norm = {norm}',
+        'step_normalize_norm': 'Norm = {norm:.6f}',
         'step_normalize_result': 'Unit vector: {unit}',
         'step_proj_init': 'Projection of {v1} onto {v2}',
-        'step_proj_dot': 'Dot product (v1·v2) = {dot}',
-        'step_proj_norm_sq': '||v2||² = {norm_sq}',
-        'step_proj_scalar': 'Scalar factor = {scalar}',
+        'step_proj_dot': 'Dot product (v1·v2) = {dot:.6f}',
+        'step_proj_norm_sq': '||v2||² = {norm_sq:.6f}',
+        'step_proj_scalar': 'Scalar factor = {scalar:.6f}',
         'step_proj_result': 'Projection vector: {proj}',
         'step_angle_init': 'Angle between {v1} and {v2}',
-        'step_angle_dot': 'Dot product = {dot}',
-        'step_angle_norms': '||v1|| = {norm1}, ||v2|| = {norm2}',
-        'step_angle_cos': 'cos(θ) = {cos}',
-        'step_angle_rad': 'θ = {rad} rad',
-        'step_angle_deg': 'θ = {deg}°',
+        'step_angle_dot': 'Dot product = {dot:.6f}',
+        'step_angle_norms': '||v1|| = {norm1:.6f}, ||v2|| = {norm2:.6f}',
+        'step_angle_cos': 'cos(θ) = {cos:.6f}',
+        'step_angle_rad': 'θ = {rad:.6f} rad',
+        'step_angle_deg': 'θ = {deg:.6f}°',
+
+        # Triple product steps
         'step_triple_init': 'Scalar triple product: {v1} · ({v2} × {v3})',
-        'step_triple_cross': 'Cross product ({v2} × {v3}) = {cross}',
-        'step_triple_dot': 'Dot product = {dot}',
-
-        'load': 'Load...',
-        'save': 'Save...',
-        'load_vector': 'Load {title}',
-        'save_vector': 'Save {title}',
-
-        'step_dot_products_detail': 'Element-wise products: {detail} = {prods}',
-        'step_cross_determinant': 'Determinant: i·({i}) - j·({j}) + k·({k})',
-        'step_cross_determinant_numeric': 'Determinant: |i  j  k|\n|{a1} {a2} {a3}|\n|{b1} {b2} {b3}|',
-        'step_cross_components_calc': 'Components:\n  x = {x_expr}\n  y = {y_expr}\n  z = {z_expr}',
-
         'step_triple_cross_start': '1. Compute cross product {v2} × {v3}:',
         'step_triple_cross_start_numeric': '1. Cross product B × C:',
         'step_triple_cross_components_calc': '   x = {x_expr}\n   y = {y_expr}\n   z = {z_expr}',
+        'step_triple_cross': 'Cross product ({v2} × {v3}) = {cross}',
         'step_triple_dot_start': '2. Dot product {v1} · ({v2} × {v3}):',
         'step_triple_dot_start_numeric': '2. Dot product A · (B × C):',
-        'step_triple_dot_products_detail': '   Element-wise: {detail} = {prods}',
         'step_triple_dot_products': '   Products: {prods}',
+        'step_triple_dot_products_detail': '   Element-wise: {detail} = {prods}',
         'step_triple_dot_sum': '   Sum = {sum:.6f}',
+        'step_triple_dot': 'Dot product = {dot:.6f}',
         'step_triple_result': 'Result (scalar triple product) = {result}',
         'step_triple_result_volume': 'Result: A·(B×C) = {result:.6f}\nParallelepiped volume = |{result:.6f}| = {'
                                      'volume:.6f}',
 
-        'symbolic_mode': 'Symbolic Mode',
-
-        # Special relations
-        'input_vectors': 'Input Vectors',
-        'comma_separated': '(comma/space separated)',
-        'parameter_name': 'Parameter:',
-        'btn_collinear_check': 'Collinear?',
-        'btn_collinear_param': 'Find λ for collinearity',
-        'btn_orthogonal': 'Orthogonal?',
-        'btn_coplanar': 'Coplanar?',
-        'collinearity_check': 'Collinearity Check',
-        'collinearity_param': 'Collinearity Parameter',
-        'orthogonality_check': 'Orthogonality Check',
-        'coplanarity_check': 'Coplanarity Check',
-
+        # Collinearity steps
         'step_collinear_init': 'Vectors: a = {v1}, b = {v2}',
+        'step_collinear_false_dim': 'Vectors have different dimensions → not collinear',
+        'step_collinear_2d_det': '2D determinant = {det}',
+        'step_collinear_2d_det_numeric': '2D determinant = {det:.6f}',
         'step_collinear_2d_eq': 'Collinearity condition (2D): {eq}',
-        'step_collinear_3d_cross': 'Cross product: a × b = {cross}',
+        'step_collinear_3d_cross': 'Cross product = {cross}',
+        'step_collinear_3d_cross_numeric': 'Cross product = {cross}',
         'step_collinear_3d_eq': 'Set component to zero: {eq}',
         'step_collinear_solve': 'Solve for {param}: {solutions}',
+        'step_collinear_result': 'Result: {result}',
 
-        'vector_to_decompose': 'Vector to decompose',
-        'basis_vectors': 'Basis vectors',
-        'btn_check_basis': 'Check basis',
-        'btn_decompose': 'Decompose',
-        'basis_check': 'Basis Check',
-        'decomposition_result': 'Coordinates in basis',
-        'coordinates': 'Coordinates',
+        # Orthogonality steps
+        'step_orthogonal_dot': 'Dot product = {dot}',
+        'step_orthogonal_result': 'Orthogonal? {result}',
 
-        'err_basis_dimension': 'All vectors must have same dimension',
-        'err_basis_count': 'Expected {expected} vectors, got {got}',
+        # Coplanarity steps
+        'step_coplanar_cross': 'Cross product v2×v3 = {cross}',
+        'step_coplanar_cross_numeric': 'Cross product = {cross}',
+        'step_coplanar_triple': 'Scalar triple product = {triple}',
+        'step_coplanar_triple_numeric': 'Scalar triple product = {triple:.6f}',
+        'step_coplanar_result': 'Coplanar? {result}',
 
+        # Basis steps
+        'step_basis_det': 'Determinant of matrix formed by vectors = {det}',
+        'step_basis_det_numeric': 'Determinant = {det:.6f}',
+        'step_basis_result': 'Form a basis? {result}',
+
+        # Decomposition steps
         'step_decompose_init': 'Decompose vector {v} in basis {basis}',
         'step_decompose_matrix': 'Transition matrix (basis columns):\n{matrix}',
-        'step_decompose_solve': 'Solve system {system}',
-        'step_decompose_result': 'Coefficients: {coeffs}',
         'step_decompose_matrix_numeric': 'Transition matrix:\n{matrix}',
+        'step_decompose_system': 'System of equations:\n{system}',
+        'step_decompose_solve': 'Solve system',
         'step_decompose_solve_numeric': 'Solve linear system',
+        'step_decompose_result': 'Coefficients: {coeffs}',
         'step_decompose_result_numeric': 'Coordinates: {coeffs}',
 
+        # Transition matrix steps
         'step_transition_init': 'Building transition matrix',
         'step_transition_formula': 'P = (new basis)⁻¹ · (old basis)',
         'step_transition_matrix': 'Transition matrix:\n{matrix}',
 
-        'points_coordinates': 'Point Coordinates',
-        'btn_collinear_points': 'Points collinear?',
-        'btn_coplanar_points': 'Points coplanar?',
-        'btn_triangle_area': 'Triangle Area (A,B,C)',
-        'btn_tetrahedron_volume': 'Tetrahedron Volume (A,B,C,D)',
-        'points_collinear': 'Points Collinearity',
-        'points_coplanar': 'Points Coplanarity',
-        'triangle_area': 'Triangle Area',
-        'tetrahedron_volume': 'Tetrahedron Volume',
-        'err_3d_required': '3D vectors required',
-        'err_coplanar_3d': 'Coplanarity defined only for 3D vectors',
-
-        'special_tab': 'Special Relations',
-        'basis_tab': 'Basis and decomposition',
-        'geometry_tab': 'Geometry',
-
-        # Eigenvalues
-        'eigen_tab': 'Eigenvalues',
-        'input_matrix': 'Matrix',
-        'btn_charpoly': 'Characteristic Polynomial',
-        'btn_eigenvalues': 'Eigenvalues',
-        'btn_eigenvectors': 'Eigenvectors',
-        'btn_diagonalize': 'Diagonalize',
-        'btn_copy_from_a': '← Copy from A',
-        'charpoly_result': 'Characteristic Polynomial',
-        'eigenvalues_result': 'Eigenvalues',
-        'eigenvectors_result': 'Eigenvectors',
-        'diagonalization_result': 'Diagonalization',
-        'err_not_diagonalizable': 'Matrix is not diagonalizable',
-
+        # Eigenvalue steps
         'step_charpoly_init': 'Build characteristic polynomial det(A - {var}I)',
         'step_charpoly_matrix': 'Matrix A - {var}I:\n{matrix}',
-        'step_charpoly_det': 'Determinant = {poly}',
         'step_charpoly_matrix_numeric': 'Matrix A:\n{matrix}',
+        'step_charpoly_det': 'Determinant = {poly}',
         'step_charpoly_coeffs': 'Characteristic polynomial coefficients: {coeffs}',
-
         'step_eigenvals_init': 'Find eigenvalues',
         'step_eigenvals_charpoly': 'Characteristic polynomial: {poly}',
-        'step_eigenvals_roots': 'Roots (eigenvalues): {vals}',
         'step_eigenvals_charpoly_numeric': 'Coefficients: {coeffs}',
+        'step_eigenvals_roots': 'Roots (eigenvalues): {vals}',
         'step_eigenvals_result': 'Eigenvalues: {vals}',
-
         'step_eigenvecs_init': 'Find eigenvectors',
         'step_eigenvecs_charpoly': 'Characteristic polynomial: {poly}',
+        'step_eigenvecs_vals': 'Eigenvalues: {vals}',
         'step_eigenvecs_for_val': 'For λ = {val} (multiplicity {mult}):',
         'step_eigenvecs_vec': '  Vector {idx}: {vec}',
-        'step_eigenvecs_vals': 'Eigenvalues: {vals}',
         'step_eigenvecs_matrix': 'Eigenvector matrix (columns):\n{matrix}',
-
         'step_diag_init': 'Diagonalize matrix',
         'step_diag_eigenvals': 'Eigenvalues (diagonal D):\n{vals}',
-        'step_diag_eigenvecs': 'Matrix P (eigenvectors):\n{matrix}',
-        'step_diag_verify': 'Verification: P·D·P⁻¹ = {product}',
         'step_diag_eigenvals_numeric': 'Eigenvalues: {vals}',
+        'step_diag_eigenvecs': 'Matrix P (eigenvectors):\n{matrix}',
         'step_diag_eigenvecs_numeric': 'Matrix P:\n{matrix}',
+        'step_diag_verify': 'Verification: P·D·P⁻¹ = {product}',
         'step_diag_verify_numeric': 'Verification: P·D·P⁻¹ =\n{product}',
 
-        'gram_schmidt_tab': 'Gram-Schmidt',
-        'visualization_tab': 'Visualization',
-        'vectors_to_plot': 'Vectors:',
-        'comma_separated_vectors': '(x,y,z; ...)',
-        'btn_plot': 'Plot',
-        'btn_clear': 'Clear',
-        'vector_plot': '3D Vectors',
-        'vectors_format': 'One vector per line: x y z (or x,y,z)',
-        'normalize': 'Normalize',
-        'btn_gram_schmidt': 'Orthogonalize',
-        'gram_schmidt_result': 'Gram-Schmidt Result',
-        'orthogonal_basis': 'Orthogonal Basis',
-        'export_latex': 'Export to LaTeX...',
-        'latex_export_success': 'File saved successfully',
-        'success': 'Success',
-
+        # Gram-Schmidt steps
         'step_gram_schmidt_init': 'Initial vectors: {vectors}',
         'step_gram_schmidt_start': 'Processing vector {idx}: v = {v}',
         'step_gram_schmidt_subtract': '  Subtract projection onto e{j}: proj = {proj}, u = {u}',
@@ -676,35 +767,25 @@ TRANSLATIONS = {
         'step_gram_schmidt_orthogonal': '  Orthogonal vector u{idx} = {u}',
         'step_gram_schmidt_normalize': '  Normalize e{idx} = {e}',
         'step_gram_schmidt_result': 'Resulting basis: {basis}',
-        'err_vectors_same_dim': 'All vectors must have the same dimension',
 
-        'op_solve_gauss': 'SLAE (Gauss)',
-        'op_solve_cramer': 'SLAE (Cramer)',
-        'op_solve_inverse': 'SLAE (Inverse matrix)',
-
-        'step_cramer_init': 'Solving with Cramer\'s method',
-        'step_cramer_det_A': 'Determinant A: det(A) = {det}',
-        'step_cramer_replace': 'Replacing {col}: det(A_{col}) = {det_i}, x_{col} = {xi}',
-        'step_cramer_result': 'Solution: x = {x}',
-
-        'step_inverse_init': 'Solving with inverse matrix method',
-        'step_inverse_compute': 'Inverse matrix A⁻¹:',
-        'step_inverse_multiply': 'Multiplying A⁻¹ by B',
-        'step_inverse_result': 'Solution: x = {x}',
-
-        'err_cramer_single_rhs': 'Cramer\'s rule supports only a single right-hand side column',
-        'step_cramer_init': '=== Solving with Cramer\'s Rule ===',
-        'step_cramer_det_A': 'Step 1: determinant of A: det(A) = {det}',
-        'step_cramer_replace': 'Step {step}: replace column {col} with B, det(A{col}) = {det_i}, x{col} = {det_i} / '
-                               'det(A) = {xi}',
-        'step_cramer_result': 'Solution: x = {x}',
-
-        'step_inverse_init': '=== Solving with Inverse Matrix ===',
-        'step_inverse_compute': 'Step 1: compute inverse matrix A⁻¹:',
-        'step_inverse_multiply': 'Step 2: multiply A⁻¹ by B:',
-        'step_inverse_component': '  x{i} = {expr} = {val}',
-        'step_inverse_result': 'Solution: x = {x}',
-        'step_inverse_result_matrix': 'Resulting matrix X:\n{x}',
+        'step_points_collinear_init': 'Checking collinearity of points A={A}, B={B}, C={C}',
+        'step_points_coplanar_init': 'Checking coplanarity of points A={A}, B={B}, C={C}, D={D}',
+        'step_triangle_area_init': 'Computing triangle area with vertices A={A}, B={B}, C={C}',
+        'step_triangle_area_vectors': 'Side vectors: AB = {AB}, AC = {AC}',
+        'step_triangle_area_cross': 'Cross product AB × AC = {cross}',
+        'step_triangle_area_result': 'Area S = 0.5 * |AB × AC| = {area:.6f}',
+        'step_tetrahedron_volume_init': 'Computing tetrahedron volume A={A}, B={B}, C={C}, D={D}',
+        'step_tetrahedron_volume_vectors': 'Edge vectors: AB = {AB}, AC = {AC}, AD = {AD}',
+        'step_tetrahedron_volume_cross': 'Cross product AC × AD = {cross}',
+        'step_tetrahedron_volume_triple': 'Scalar triple product AB · (AC × AD) = {triple}',
+        'step_tetrahedron_volume_result': 'Volume V = |{triple}| / 6 = {volume:.6f}',
+        'warn_heavy_symbolic': 'Symbolic operation on {size}×{size} matrix may take a long time. Continue?',
+        'warn_heavy_symbolic_op': 'Symbolic operation "{op}" on a {size}×{size} matrix may take a long time and '
+                                  'consume significant resources. Continue?',
+        'symbolic_mode_long': 'symbolic',
+        'numeric_mode': 'numeric',
+        'warn_heavy_operation_detailed': 'Operation "{op}" on a {size}×{size} matrix in {mode} mode may take a very '
+                                         'long time (potentially indefinitely). Continue?',
     }
 }
 

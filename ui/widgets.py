@@ -825,10 +825,8 @@ class SpecialRelationsPanel(ttk.Frame):
         v1 = self._parse_vector(self.v1_entry.get())
         v2 = self._parse_vector(self.v2_entry.get())
         try:
-            res = self.engine.are_collinear(v1, v2)
-            self.step_viewer.clear()
-            self.step_viewer.add_header(Language.tr('collinearity_check'))
-            self.step_viewer.add_result(str(res))
+            res, steps = self.engine.are_collinear(v1, v2, show_steps=True)
+            self._show_result(res, steps, Language.tr('collinearity_check'))
         except Exception as e:
             self.step_viewer.add_error(str(e))
 
@@ -847,10 +845,8 @@ class SpecialRelationsPanel(ttk.Frame):
         v1 = self._parse_vector(self.v1_entry.get())
         v2 = self._parse_vector(self.v2_entry.get())
         try:
-            res = self.engine.is_orthogonal(v1, v2)
-            self.step_viewer.clear()
-            self.step_viewer.add_header(Language.tr('orthogonality_check'))
-            self.step_viewer.add_result(str(res))
+            res, steps = self.engine.is_orthogonal(v1, v2, show_steps=True)
+            self._show_result(res, steps, Language.tr('orthogonality_check'))
         except Exception as e:
             self.step_viewer.add_error(str(e))
 
@@ -859,10 +855,8 @@ class SpecialRelationsPanel(ttk.Frame):
         v2 = self._parse_vector(self.v2_entry.get())
         v3 = self._parse_vector(self.v3_entry.get())
         try:
-            res = self.engine.are_coplanar(v1, v2, v3)
-            self.step_viewer.clear()
-            self.step_viewer.add_header(Language.tr('coplanarity_check'))
-            self.step_viewer.add_result(str(res))
+            res, steps = self.engine.are_coplanar(v1, v2, v3, show_steps=True)
+            self._show_result(res, steps, Language.tr('coplanarity_check'))
         except Exception as e:
             self.step_viewer.add_error(str(e))
 
@@ -919,10 +913,8 @@ class BasisPanel(ttk.Frame):
     def _check_basis(self):
         basis = [self._parse_vector(e.get()) for e in self.basis_entries]
         try:
-            res = self.engine.is_basis(basis)
-            self.step_viewer.clear()
-            self.step_viewer.add_header(Language.tr('basis_check'))
-            self.step_viewer.add_result(str(res))
+            res, steps = self.engine.is_basis(basis, show_steps=True)
+            self._show_result(res, steps, Language.tr('basis_check'))
         except Exception as e:
             self.step_viewer.add_error(str(e))
 
@@ -980,46 +972,74 @@ class GeometryPanel(ttk.Frame):
                    command=self._tetrahedron_volume).pack(side='left', padx=2)
 
     def _parse_point(self, entry_str):
+        """Parse point coordinates from entry string."""
         parts = entry_str.replace(',', ' ').split()
-        return [float(p) for p in parts[:3]]
+        if self.engine.get_symbolic_mode():
+            # Keep as strings for symbolic parsing by engine
+            return [part.strip() for part in parts if part.strip()]
+        else:
+            return [float(p) for p in parts[:3]]
 
     def _check_points_collinear(self):
-        A = self._parse_point(self.point_entries[0].get())
-        B = self._parse_point(self.point_entries[1].get())
-        C = self._parse_point(self.point_entries[2].get())
-        res = self.engine.points_collinear(A, B, C)
-        self.step_viewer.clear()
-        self.step_viewer.add_header(Language.tr('points_collinear'))
-        self.step_viewer.add_result(str(res))
+        try:
+            A = self._parse_point(self.point_entries[0].get())
+            B = self._parse_point(self.point_entries[1].get())
+            C = self._parse_point(self.point_entries[2].get())
+            res, steps = self.engine.points_collinear(A, B, C, show_steps=True)
+            self._show_result(res, steps, Language.tr('points_collinear'))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
 
     def _check_points_coplanar(self):
-        A = self._parse_point(self.point_entries[0].get())
-        B = self._parse_point(self.point_entries[1].get())
-        C = self._parse_point(self.point_entries[2].get())
-        D = self._parse_point(self.point_entries[3].get())
-        res = self.engine.points_coplanar(A, B, C, D)
-        self.step_viewer.clear()
-        self.step_viewer.add_header(Language.tr('points_coplanar'))
-        self.step_viewer.add_result(str(res))
+        try:
+            A = self._parse_point(self.point_entries[0].get())
+            B = self._parse_point(self.point_entries[1].get())
+            C = self._parse_point(self.point_entries[2].get())
+            D = self._parse_point(self.point_entries[3].get())
+            res, steps = self.engine.points_coplanar(A, B, C, D, show_steps=True)
+            self._show_result(res, steps, Language.tr('points_coplanar'))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
 
     def _triangle_area(self):
-        A = self._parse_point(self.point_entries[0].get())
-        B = self._parse_point(self.point_entries[1].get())
-        C = self._parse_point(self.point_entries[2].get())
-        area = self.engine.triangle_area_points(A, B, C)
-        self.step_viewer.clear()
-        self.step_viewer.add_header(Language.tr('triangle_area'))
-        self.step_viewer.add_result(f"{area:.6f}")
+        try:
+            A = self._parse_point(self.point_entries[0].get())
+            B = self._parse_point(self.point_entries[1].get())
+            C = self._parse_point(self.point_entries[2].get())
+            area, steps = self.engine.triangle_area_points(A, B, C, show_steps=True)
+            self._show_result(area, steps, Language.tr('triangle_area'))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
 
     def _tetrahedron_volume(self):
-        A = self._parse_point(self.point_entries[0].get())
-        B = self._parse_point(self.point_entries[1].get())
-        C = self._parse_point(self.point_entries[2].get())
-        D = self._parse_point(self.point_entries[3].get())
-        vol = self.engine.tetrahedron_volume_points(A, B, C, D)
+        try:
+            A = self._parse_point(self.point_entries[0].get())
+            B = self._parse_point(self.point_entries[1].get())
+            C = self._parse_point(self.point_entries[2].get())
+            D = self._parse_point(self.point_entries[3].get())
+            vol, steps = self.engine.tetrahedron_volume_points(A, B, C, D, show_steps=True)
+            self._show_result(vol, steps, Language.tr('tetrahedron_volume'))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _show_result(self, result, steps, title):
+        """Display result and steps in the step viewer."""
         self.step_viewer.clear()
-        self.step_viewer.add_header(Language.tr('tetrahedron_volume'))
-        self.step_viewer.add_result(f"{vol:.6f}")
+        self.step_viewer.add_header(title)
+        if steps:
+            for step in steps:
+                self.step_viewer.add_step(step['step'] + 1, step['desc'])
+                state = step.get('state')
+                if state is not None:
+                    self.step_viewer.add_matrix(state, title=Language.tr('state'))
+        if isinstance(result, bool):
+            self.step_viewer.add_result(str(result))
+        elif isinstance(result, (int, float, np.number, sp.Number)):
+            self.step_viewer.add_result(f"{result:.6f}" if isinstance(result, float) else str(result))
+        elif isinstance(result, (np.ndarray, sp.Matrix)):
+            self.step_viewer.add_matrix(result, title=Language.tr('result'))
+        else:
+            self.step_viewer.add_result(str(result))
 
 
 class EigenPanel(ttk.Frame):
@@ -1067,8 +1087,43 @@ class EigenPanel(ttk.Frame):
         if matrix is not None:
             self.matrix_widget.set_matrix_data(matrix, symbolic=self.engine.get_symbolic_mode())
 
+    def _warn_if_heavy(self, A, operation_name):
+        """
+        Show warning if matrix is large enough to potentially cause performance issues.
+        For symbolic mode, even 3x3 can be extremely slow; threshold = 2.
+        Returns True if user wants to proceed.
+        """
+        try:
+            if isinstance(A, (list, np.ndarray)):
+                size = len(A)
+            elif isinstance(A, sp.Matrix):
+                size = A.rows
+            else:
+                size = 0
+        except:
+            size = 0
+
+        symbolic = self.engine.get_symbolic_mode()
+
+        # Symbolic: warn for any matrix larger than 2x2 (i.e., 3x3 and above)
+        # Numeric: warn for > 50x50
+        threshold = 2 if symbolic else 50
+
+        if size > threshold:
+            mode_str = Language.tr('symbolic_mode_long') if symbolic else Language.tr('numeric_mode')
+            return messagebox.askyesno(
+                Language.tr('warning'),
+                Language.tr('warn_heavy_operation_detailed',
+                            op=operation_name,
+                            size=size,
+                            mode=mode_str)
+            )
+        return True
+
     def _compute_charpoly(self):
         A = self._get_matrix_data()
+        if not self._warn_if_heavy(A, Language.tr('charpoly_result')):
+            return
         try:
             poly, steps = self.engine.characteristic_polynomial(
                 A, show_steps=self.show_steps_var.get())
@@ -1078,6 +1133,8 @@ class EigenPanel(ttk.Frame):
 
     def _compute_eigenvalues(self):
         A = self._get_matrix_data()
+        if not self._warn_if_heavy(A, Language.tr('eigenvalues_result')):
+            return
         try:
             vals, steps = self.engine.eigenvalues(A, show_steps=self.show_steps_var.get())
             self._show_result(vals, steps, Language.tr('eigenvalues_result'))
@@ -1086,6 +1143,8 @@ class EigenPanel(ttk.Frame):
 
     def _compute_eigenvectors(self):
         A = self._get_matrix_data()
+        if not self._warn_if_heavy(A, Language.tr('eigenvectors_result')):
+            return
         try:
             vecs, steps = self.engine.eigenvectors(A, show_steps=self.show_steps_var.get())
             self._show_result(vecs, steps, Language.tr('eigenvectors_result'))
@@ -1094,6 +1153,8 @@ class EigenPanel(ttk.Frame):
 
     def _diagonalize(self):
         A = self._get_matrix_data()
+        if not self._warn_if_heavy(A, Language.tr('diagonalization_result')):
+            return
         try:
             (P, D), steps = self.engine.diagonalize(A, show_steps=self.show_steps_var.get())
             self._show_result((P, D), steps, Language.tr('diagonalization_result'))

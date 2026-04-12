@@ -77,6 +77,9 @@ class MatrixEngine:
         return np.asarray(matrix, dtype=self._current_dtype)
 
     def _to_sympy_matrix(self, data):
+        """Convert a 2D list (with strings/numbers) to SymPy Matrix."""
+        if isinstance(data, sp.Matrix):
+            return data
         sym_data = []
         for row in data:
             sym_row = [self._parse_expression(cell) for cell in row]
@@ -163,30 +166,76 @@ class MatrixEngine:
         return inverse, steps_log
 
     def inverse_matrix(self, A, show_steps=False):
-        if not isinstance(A, (np.ndarray, sp.Matrix, list)):
-            A = np.array(A)
         if self._symbolic_mode:
-            A = sp.Matrix(A)
-        else:
-            A = np.array(A)
-        self._validate_square_matrix(A, "Matrix inversion")
-        if show_steps:
-            result, log = self._calculate_inverse_steps(A)
-            return result, log
-        else:
-            try:
-                if self._symbolic_mode:
+            if not isinstance(A, sp.Matrix):
+                A = self._to_sympy_matrix(A)
+            self._validate_square_matrix(A, "Matrix inversion")
+            if show_steps:
+                return self._calculate_inverse_steps_symbolic(A)
+            else:
+                try:
                     return A.inv(), None
-                else:
+                except Exception as e:
+                    raise ValueError(Language.tr('err_inversion_failed', msg=str(e)))
+        else:
+            A = np.array(A, dtype=self._current_dtype)
+            self._validate_square_matrix(A, "Matrix inversion")
+            if show_steps:
+                return self._calculate_inverse_steps(A)
+            else:
+                try:
                     if self.gpu_available:
                         import cupy as cp
                         A_gpu = cp.asarray(A)
                         result = cp.linalg.inv(A_gpu).get()
                     else:
-                        result = np.linalg.inv(A.astype(self._current_dtype))
+                        result = np.linalg.inv(A)
                     return result, None
-            except Exception as e:
-                raise ValueError(Language.tr('err_inversion_failed', msg=str(e)))
+                except Exception as e:
+                    raise ValueError(Language.tr('err_inversion_failed', msg=str(e)))
+
+    def _calculate_inverse_steps_symbolic(self, A):
+        n = A.rows
+        aug = A.row_join(sp.eye(n))
+        steps_log = []
+        current_step = 0
+        steps_log.append({'step': current_step, 'desc': Language.tr('step_initial_aug'), 'state': aug})
+        current_step += 1
+
+        for col in range(n):
+            pivot_val = aug[col, col]
+            if pivot_val == 0:
+                # Try row swap
+                for r in range(col + 1, n):
+                    if aug[r, col] != 0:
+                        aug.row_swap(col, r)
+                        steps_log.append(
+                            {'step': current_step, 'desc': Language.tr('step_swap', row1=col + 1, row2=r + 1),
+                             'state': aug})
+                        current_step += 1
+                        pivot_val = aug[col, col]
+                        break
+            if pivot_val == 0:
+                raise sp.MatrixError(Language.tr('err_singular_matrix'))
+
+            aug[col, :] = aug[col, :] / pivot_val
+            steps_log.append({'step': current_step, 'desc': Language.tr('step_normalize', row=col + 1, value=pivot_val),
+                              'state': aug})
+            current_step += 1
+
+            for i in range(n):
+                if i != col:
+                    factor = aug[i, col]
+                    if factor != 0:
+                        aug[i, :] = aug[i, :] - factor * aug[col, :]
+                        steps_log.append({'step': current_step,
+                                          'desc': Language.tr('step_eliminate', col=col + 1, row=i + 1, factor=factor),
+                                          'state': aug})
+                        current_step += 1
+
+        inverse = aug[:, n:]
+        steps_log.append({'step': current_step, 'desc': Language.tr('step_inverse_result_matrix'), 'state': inverse})
+        return inverse, steps_log
 
     def _calculate_determinant_steps(self, A_data):
         if self._symbolic_mode:
@@ -196,45 +245,74 @@ class MatrixEngine:
         n = A.shape[0]
         steps_log = []
         current_step = 0
-        sign = 1
         steps_log.append({'step': current_step, 'desc': Language.tr('step_initial'), 'state': A})
         current_step += 1
 
         if self._symbolic_mode:
-            det = A.det()
-            steps_log.append({'step': current_step, 'desc': Language.tr('step_det_result', det=det), 'state': None})
+            # For small matrices (≤3) show formula; for larger use direct det
+            if n <= 3:
+                if n == 1:
+                    det = A[0, 0]
+                    steps_log.append(
+                        {'step': current_step, 'desc': Language.tr('step_det_1x1', val=det), 'state': None})
+                elif n == 2:
+                    a, b, c, d = A[0, 0], A[0, 1], A[1, 0], A[1, 1]
+                    det = a * d - b * c
+                    steps_log.append(
+                        {'step': current_step, 'desc': Language.tr('step_det_2x2', a=a, b=b, c=c, d=d, det=det),
+                         'state': None})
+                else:  # 3x3
+                    # Sarrus rule or Laplace expansion
+                    steps_log.append({'step': current_step, 'desc': Language.tr('step_det_3x3_expand'), 'state': None})
+                    det = A.det()
+                    steps_log.append(
+                        {'step': current_step + 1, 'desc': Language.tr('step_det_result', det=det), 'state': None})
+            else:
+                det = A.det()
+                steps_log.append(
+                    {'step': current_step, 'desc': Language.tr('step_det_symbolic', det=det), 'state': None})
             return det, steps_log
 
+        # Numeric branch unchanged (Gauss elimination)
+        sign = 1
         for col in range(n):
             pivot_row = np.argmax(np.abs(A[col:, col])) + col
             if np.isclose(A[pivot_row, col], 0):
-                steps_log.append({'step': current_step, 'desc': Language.tr('step_pivot_zero', col=col+1), 'state': A})
-                steps_log.append({'step': current_step+1, 'desc': Language.tr('step_singular'), 'state': None})
+                steps_log.append(
+                    {'step': current_step, 'desc': Language.tr('step_pivot_zero', col=col + 1), 'state': A})
+                steps_log.append({'step': current_step + 1, 'desc': Language.tr('step_singular'), 'state': None})
                 return 0.0, steps_log
             if pivot_row != col:
                 A[[col, pivot_row]] = A[[pivot_row, col]]
                 sign *= -1
-                steps_log.append({'step': current_step, 'desc': Language.tr('step_swap', row1=col+1, row2=pivot_row+1), 'state': A})
+                steps_log.append(
+                    {'step': current_step, 'desc': Language.tr('step_swap', row1=col + 1, row2=pivot_row + 1),
+                     'state': A})
                 current_step += 1
             pivot_val = A[col, col]
-            for i in range(col+1, n):
+            for i in range(col + 1, n):
                 if not np.isclose(A[i, col], 0):
                     factor = A[i, col] / pivot_val
                     A[i, col:] -= factor * A[col, col:]
-                    steps_log.append({'step': current_step, 'desc': Language.tr('step_eliminate', col=col+1, row=i+1, factor=factor), 'state': A})
+                    steps_log.append({'step': current_step,
+                                      'desc': Language.tr('step_eliminate', col=col + 1, row=i + 1, factor=factor),
+                                      'state': A})
                     current_step += 1
-
         diag_product = np.prod(np.diag(A))
         det = sign * diag_product
-        steps_log.append({'step': current_step, 'desc': Language.tr('step_diag_product', product=diag_product, sign=sign), 'state': A})
-        steps_log.append({'step': current_step+1, 'desc': Language.tr('step_det_result', det=det), 'state': None})
+        steps_log.append(
+            {'step': current_step, 'desc': Language.tr('step_diag_product', product=diag_product, sign=sign),
+             'state': A})
+        steps_log.append({'step': current_step + 1, 'desc': Language.tr('step_det_result', det=det), 'state': None})
         return det, steps_log
 
     def determinant_matrix(self, A, show_steps=False):
         if self._symbolic_mode:
-            A = sp.Matrix(A)
+            # Ensure A is a SymPy Matrix
+            if not isinstance(A, sp.Matrix):
+                A = self._to_sympy_matrix(A)
         else:
-            A = np.array(A)
+            A = np.array(A, dtype=self._current_dtype)
         self._validate_square_matrix(A, "Determinant calculation")
         if show_steps:
             return self._calculate_determinant_steps(A)
@@ -242,7 +320,7 @@ class MatrixEngine:
             if self._symbolic_mode:
                 return A.det(), None
             else:
-                return np.linalg.det(A.astype(self._current_dtype)), None
+                return np.linalg.det(A), None
 
     def _calculate_rank_steps(self, A):
         A = A.astype(self._current_dtype, copy=True)
@@ -277,8 +355,13 @@ class MatrixEngine:
 
     def rank_matrix(self, A, show_steps=False):
         if self._symbolic_mode:
-            A = sp.Matrix(A)
-            return A.rank(), None
+            if not isinstance(A, sp.Matrix):
+                A = self._to_sympy_matrix(A)
+            rank_val = A.rank()
+            if show_steps:
+                steps = [{'step': 0, 'desc': Language.tr('step_rank_symbolic', rank=rank_val), 'state': A}]
+                return rank_val, steps
+            return rank_val, None
         else:
             A = np.array(A)
             if show_steps:
@@ -750,25 +833,54 @@ class MatrixEngine:
     # Phase 2: Vector Special Relations, Basis, Geometry
     # ----------------------------------------------------------------------
 
-    def are_collinear(self, v1, v2) -> bool:
-        """Check if two vectors are collinear (2D or 3D)."""
+    def are_collinear(self, v1, v2, show_steps=False):
         v1 = self._as_vector(v1)
         v2 = self._as_vector(v2)
+        steps = []
         if len(v1) != len(v2):
+            if show_steps:
+                steps.append({'step': 0, 'desc': Language.tr('step_collinear_false_dim'), 'state': None})
+                return False, steps
             return False
+
         if self._symbolic_mode:
-            # Cross product zero vector
             if len(v1) == 2:
-                cross = v1[0] * v2[1] - v1[1] * v2[0]
-                return cross == 0
+                det = v1[0] * v2[1] - v1[1] * v2[0]
+                res = det == 0
+                if show_steps:
+                    steps.append({'step': 0, 'desc': Language.tr('step_collinear_2d_det', det=det), 'state': None})
+                    steps.append({'step': 1, 'desc': Language.tr('step_collinear_result', result=res), 'state': None})
+                    return res, steps
+                return res
             else:
                 cross = v1.cross(v2)
-                return cross == sp.Matrix([0, 0, 0])
+                res = cross == sp.Matrix([0, 0, 0])
+                if show_steps:
+                    steps.append(
+                        {'step': 0, 'desc': Language.tr('step_collinear_3d_cross', cross=self._format_vector(cross)),
+                         'state': cross})
+                    steps.append({'step': 1, 'desc': Language.tr('step_collinear_result', result=res), 'state': None})
+                    return res, steps
+                return res
         else:
             if len(v1) == 2:
-                return np.isclose(v1[0] * v2[1] - v1[1] * v2[0], 0)
+                det = v1[0] * v2[1] - v1[1] * v2[0]
+                res = np.isclose(det, 0)
+                if show_steps:
+                    steps.append(
+                        {'step': 0, 'desc': Language.tr('step_collinear_2d_det_numeric', det=det), 'state': None})
+                    steps.append({'step': 1, 'desc': Language.tr('step_collinear_result', result=res), 'state': None})
+                    return res, steps
+                return res
             else:
-                return np.allclose(np.cross(v1, v2), 0)
+                cross = np.cross(v1, v2)
+                res = np.allclose(cross, 0)
+                if show_steps:
+                    steps.append({'step': 0, 'desc': Language.tr('step_collinear_3d_cross_numeric',
+                                                                 cross=self._format_vector(cross)), 'state': cross})
+                    steps.append({'step': 1, 'desc': Language.tr('step_collinear_result', result=res), 'state': None})
+                    return res, steps
+                return res
 
     def find_collinearity_parameter(self, v1_expr, v2_expr, param_name='λ', show_steps=False):
         """
@@ -813,43 +925,78 @@ class MatrixEngine:
 
         return solutions, steps
 
-    def are_coplanar(self, v1, v2, v3) -> bool:
+    def are_coplanar(self, v1, v2, v3, show_steps=False):
         """Check if three 3D vectors are coplanar (scalar triple product == 0)."""
         v1 = self._as_vector(v1)
         v2 = self._as_vector(v2)
         v3 = self._as_vector(v3)
         if not (len(v1) == len(v2) == len(v3) == 3):
             raise ValueError(Language.tr('err_coplanar_3d'))
+        steps = []
         if self._symbolic_mode:
             triple = v1.dot(v2.cross(v3))
-            return triple == 0
+            res = triple == 0
+            if show_steps:
+                cross = v2.cross(v3)
+                steps.append({'step': 0, 'desc': Language.tr('step_coplanar_cross',
+                                                             cross=self._format_vector(cross)), 'state': cross})
+                steps.append({'step': 1, 'desc': Language.tr('step_coplanar_triple',
+                                                             triple=triple), 'state': None})
+                steps.append({'step': 2, 'desc': Language.tr('step_coplanar_result',
+                                                             result=res), 'state': None})
+                return res, steps
+            return res
         else:
-            return np.isclose(np.dot(v1, np.cross(v2, v3)), 0)
+            triple = np.dot(v1, np.cross(v2, v3))
+            res = np.isclose(triple, 0)
+            if show_steps:
+                cross = np.cross(v2, v3)
+                steps.append({'step': 0, 'desc': Language.tr('step_coplanar_cross_numeric',
+                                                             cross=self._format_vector(cross)), 'state': cross})
+                steps.append({'step': 1, 'desc': Language.tr('step_coplanar_triple_numeric',
+                                                             triple=triple), 'state': None})
+                steps.append({'step': 2, 'desc': Language.tr('step_coplanar_result',
+                                                             result=res), 'state': None})
+                return res, steps
+            return res
 
-    def is_orthogonal(self, v1, v2) -> bool:
+    def is_orthogonal(self, v1, v2, show_steps=False):
         """Check if two vectors are orthogonal (dot product == 0)."""
         v1 = self._as_vector(v1)
         v2 = self._as_vector(v2)
         self._validate_vectors_same_length(v1, v2, "orthogonality")
-        if self._symbolic_mode:
-            return v1.dot(v2) == 0
-        else:
-            return np.isclose(np.dot(v1, v2), 0)
+        dot = v1.dot(v2) if self._symbolic_mode else np.dot(v1, v2)
+        res = (dot == 0) if self._symbolic_mode else np.isclose(dot, 0)
+        steps = []
+        if show_steps:
+            steps.append({'step': 0, 'desc': Language.tr('step_orthogonal_dot',
+                                                         dot=dot), 'state': None})
+            steps.append({'step': 1, 'desc': Language.tr('step_orthogonal_result',
+                                                         result=res), 'state': None})
+            return res, steps
+        return res
 
-    def is_basis(self, vectors) -> bool:
+    def is_basis(self, vectors, show_steps=False):
         """Check if set of vectors forms a basis (linearly independent)."""
         if self._symbolic_mode:
-            M = sp.Matrix(vectors).T  # columns are vectors
-            return M.det() != 0
+            M = sp.Matrix.hstack(*[self._as_vector(v) for v in vectors])
+            det = M.det()
+            res = det != 0
         else:
-            M = np.column_stack(vectors)
-            return not np.isclose(np.linalg.det(M), 0)
+            M = np.column_stack([self._as_vector(v) for v in vectors])
+            if M.shape[0] != M.shape[1]:
+                # Not square, cannot be a basis in standard sense
+                return False, None
+            det = np.linalg.det(M)
+            res = not np.isclose(det, 0)
+        if show_steps:
+            steps = [{'step': 0,
+                      'desc': Language.tr('step_basis_det' + ('_numeric' if not self._symbolic_mode else ''), det=det),
+                      'state': M}, {'step': 1, 'desc': Language.tr('step_basis_result', result=res), 'state': None}]
+            return res, steps
+        return res
 
     def decompose_vector(self, v, basis, show_steps=False):
-        """
-        Express vector v as linear combination of basis vectors.
-        Returns coefficients (coordinates in the basis) and steps.
-        """
         v = self._as_vector(v)
         basis = [self._as_vector(b) for b in basis]
         dim = len(v)
@@ -858,41 +1005,48 @@ class MatrixEngine:
         if len(basis) != dim:
             raise ValueError(Language.tr('err_basis_count', got=len(basis), expected=dim))
 
-        steps = []
-        if show_steps:
-            steps.append({'step': 0, 'desc': Language.tr('step_decompose_init',
-                                                         v=self._format_vector(v),
-                                                         basis=str([self._format_vector(b) for b in basis])),
-                          'state': None})
-
         if self._symbolic_mode:
-            # Build matrix with basis vectors as columns
-            M = sp.Matrix(basis).T
+            M = sp.Matrix.hstack(*basis)  # columns are basis vectors
+            v_vec = sp.Matrix(v)
             if show_steps:
-                steps.append({'step': 1, 'desc': Language.tr('step_decompose_matrix',
-                                                             matrix=str(M)), 'state': M})
-            # Solve M * x = v
-            coeffs = M.LUsolve(sp.Matrix(v))
-            if show_steps:
-                steps.append({'step': 2, 'desc': Language.tr('step_decompose_solve',
-                                                             system=f"{M}·x = {self._format_vector(v)}"),
-                              'state': None})
-                steps.append({'step': 3, 'desc': Language.tr('step_decompose_result',
-                                                             coeffs=str(coeffs)), 'state': None})
-            return list(coeffs), steps
+                steps = [{'step': 0, 'desc': Language.tr('step_decompose_init',
+                                                         v=self._format_vector(v_vec),
+                                                         basis=str([self._format_vector(b) for b in basis])),
+                          'state': None},
+                         {'step': 1, 'desc': Language.tr('step_decompose_matrix', matrix=str(M)), 'state': M}]
+                system_str = "\n".join([f"{M.row(i)} · x = {v[i]}" for i in range(dim)])
+                steps.append(
+                    {'step': 2, 'desc': Language.tr('step_decompose_system', system=system_str), 'state': None})
+                # Solve M * x = v
+                try:
+                    coeffs = M.LUsolve(v_vec)
+                except:
+                    # Fallback to linsolve
+                    x = sp.symbols(f'x0:{dim}')
+                    eqs = [sum(M[i, j] * x[j] for j in range(dim)) - v[i] for i in range(dim)]
+                    sol = sp.linsolve(eqs, x)
+                    coeffs = sp.Matrix(list(sol)[0])
+                steps.append(
+                    {'step': 3, 'desc': Language.tr('step_decompose_result', coeffs=self._format_vector(coeffs)),
+                     'state': coeffs})
+                return list(coeffs), steps
+            else:
+                return list(M.LUsolve(v_vec)), None
         else:
             M = np.column_stack(basis)
             if show_steps:
-                steps.append({'step': 1, 'desc': Language.tr('step_decompose_matrix_numeric',
-                                                             matrix=str(M)), 'state': M})
+                steps = [{'step': 0, 'desc': Language.tr('step_decompose_init',
+                                                         v=self._format_vector(v),
+                                                         basis=str([self._format_vector(b) for b in basis])),
+                          'state': None},
+                         {'step': 1, 'desc': Language.tr('step_decompose_matrix_numeric', matrix=str(M)), 'state': M}]
             coeffs = np.linalg.solve(M, v)
             if show_steps:
-                steps.append({'step': 2, 'desc': Language.tr('step_decompose_solve_numeric',
-                                                             system=f"{M}·x = {self._format_vector(v)}"),
-                              'state': None})
-                steps.append({'step': 3, 'desc': Language.tr('step_decompose_result_numeric',
-                                                             coeffs=self._format_vector(coeffs)), 'state': None})
-            return coeffs, steps
+                steps.append({'step': 2,
+                              'desc': Language.tr('step_decompose_result_numeric', coeffs=self._format_vector(coeffs)),
+                              'state': coeffs})
+                return coeffs, steps
+            return coeffs, None
 
     def change_of_basis_matrix(self, old_basis, new_basis, show_steps=False):
         """Compute transition matrix from old basis to new basis."""
@@ -929,24 +1083,73 @@ class MatrixEngine:
         B = np.asarray(B, dtype=float)
         return B - A
 
-    def points_collinear(self, A, B, C) -> bool:
+    def points_collinear(self, A, B, C, show_steps=False):
         """Check if three points lie on a line."""
         AB = self.vector_from_points(A, B)
         AC = self.vector_from_points(A, C)
+        if show_steps:
+            res, steps = self.are_collinear(AB, AC, show_steps=True)
+            # Prepend point info
+            steps.insert(0, {'step': 0, 'desc': Language.tr('step_points_collinear_init',
+                                                            A=A, B=B, C=C), 'state': None})
+            # Renumber steps
+            for i, s in enumerate(steps):
+                s['step'] = i
+            return res, steps
         return self.are_collinear(AB, AC)
 
-    def points_coplanar(self, A, B, C, D) -> bool:
+    def points_coplanar(self, A, B, C, D, show_steps=False):
         """Check if four points lie in a plane."""
         AB = self.vector_from_points(A, B)
         AC = self.vector_from_points(A, C)
         AD = self.vector_from_points(A, D)
+        if show_steps:
+            res, steps = self.are_coplanar(AB, AC, AD, show_steps=True)
+            steps.insert(0, {'step': 0, 'desc': Language.tr('step_points_coplanar_init',
+                                                            A=A, B=B, C=C, D=D), 'state': None})
+            for i, s in enumerate(steps):
+                s['step'] = i
+            return res, steps
         return self.are_coplanar(AB, AC, AD)
 
-    def triangle_area_points(self, A, B, C):
+    def _parse_point(self, point):
+        """Parse point coordinates; if 2D, return as is (will be padded later)."""
+        if self._symbolic_mode:
+            return sp.Matrix([self._parse_expression(c) for c in point])
+        else:
+            arr = np.array([float(c) for c in point], dtype=self._current_dtype)
+            return arr
+
+    def triangle_area_points(self, A, B, C, show_steps=False):
         """Area of triangle given three 3D points."""
-        AB = self.vector_from_points(A, B)
-        AC = self.vector_from_points(A, C)
-        return self.triangle_area_vectors(AB, AC)
+        A = self._parse_point(A)
+        B = self._parse_point(B)
+        C = self._parse_point(C)
+        # Ensure 3D by padding with zero if needed
+        if len(A) == 2:
+            A = np.append(A, 0)
+            B = np.append(B, 0)
+            C = np.append(C, 0)
+        AB = B - A
+        AC = C - A
+        if self._symbolic_mode:
+            cross = sp.Matrix(AB).cross(sp.Matrix(AC))
+            area = sp.sqrt(cross.dot(cross)) / 2
+        else:
+            cross = np.cross(AB, AC)
+            area = 0.5 * np.linalg.norm(cross)
+        if show_steps:
+            steps = [{'step': 0, 'desc': Language.tr('step_triangle_area_init',
+                                                     A=self._format_point(A), B=self._format_point(B),
+                                                     C=self._format_point(C)), 'state': None},
+                     {'step': 1, 'desc': Language.tr('step_triangle_area_vectors',
+                                                     AB=self._format_vector(AB), AC=self._format_vector(AC)),
+                      'state': None}, {'step': 2, 'desc': Language.tr('step_triangle_area_cross',
+                                                                      cross=self._format_vector(cross)),
+                                       'state': cross}, {'step': 3, 'desc': Language.tr('step_triangle_area_result',
+                                                                                        area=area), 'state': None}]
+            return area, steps
+        return area
 
     def triangle_area_vectors(self, v1, v2):
         """Area of triangle from two side vectors."""
@@ -957,12 +1160,43 @@ class MatrixEngine:
         cross = np.cross(v1, v2)
         return 0.5 * np.linalg.norm(cross)
 
-    def tetrahedron_volume_points(self, A, B, C, D):
+    def _format_point(self, p):
+        if self._symbolic_mode:
+            return str(p)
+        return "(" + ", ".join(f"{x:.4g}" for x in p) + ")"
+
+    def tetrahedron_volume_points(self, A, B, C, D, show_steps=False):
         """Volume of tetrahedron from four 3D points."""
-        AB = self.vector_from_points(A, B)
-        AC = self.vector_from_points(A, C)
-        AD = self.vector_from_points(A, D)
-        return abs(np.dot(AB, np.cross(AC, AD))) / 6.0
+        A = self._parse_point(A)
+        B = self._parse_point(B)
+        C = self._parse_point(C)
+        D = self._parse_point(D)
+        AB = B - A
+        AC = C - A
+        AD = D - A
+        if self._symbolic_mode:
+            cross = sp.Matrix(AC).cross(sp.Matrix(AD))
+            triple = sp.Matrix(AB).dot(cross)
+            volume = sp.Abs(triple) / 6
+        else:
+            cross = np.cross(AC, AD)
+            triple = np.dot(AB, cross)
+            volume = abs(triple) / 6.0
+        if show_steps:
+            steps = [{'step': 0, 'desc': Language.tr('step_tetrahedron_volume_init',
+                                                     A=self._format_point(A), B=self._format_point(B),
+                                                     C=self._format_point(C), D=self._format_point(D)), 'state': None},
+                     {'step': 1, 'desc': Language.tr('step_tetrahedron_volume_vectors',
+                                                     AB=self._format_vector(AB), AC=self._format_vector(AC),
+                                                     AD=self._format_vector(AD)), 'state': None},
+                     {'step': 2, 'desc': Language.tr('step_tetrahedron_volume_cross',
+                                                     cross=self._format_vector(cross)), 'state': cross},
+                     {'step': 3, 'desc': Language.tr('step_tetrahedron_volume_triple',
+                                                     triple=triple), 'state': None},
+                     {'step': 4, 'desc': Language.tr('step_tetrahedron_volume_result',
+                                                     triple=triple, volume=volume), 'state': None}]
+            return volume, steps
+        return volume
 
     def tetrahedron_volume_vectors(self, v1, v2, v3):
         """Volume from three edge vectors from one vertex."""
