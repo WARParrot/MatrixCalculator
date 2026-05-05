@@ -14,10 +14,11 @@ class MatrixWidget(ttk.Frame):
     MAX_ROWS = 20
     MAX_COLS = 20
 
-    def __init__(self, master=None, title="Matrix", rows=3, cols=3):
+    def __init__(self, master=None, title_key="matrix_a", rows=3, cols=3):
         super().__init__(master)
         self.master = master
-        self.title_text = title
+        self.title_key = title_key
+        self.title_text = Language.tr(title_key)
         self.rows = rows
         self.cols = cols
         self.entry_width = 8
@@ -27,7 +28,7 @@ class MatrixWidget(ttk.Frame):
         self.control_frame = ttk.Frame(self)
         self.control_frame.pack(fill='x', padx=5, pady=5)
 
-        self.title_label = ttk.Label(self.control_frame, text=f"{title}: ")
+        self.title_label = ttk.Label(self.control_frame, text=f"{self.title_text}: ")
         self.title_label.pack(side='left')
 
         self.rows_label = ttk.Label(self.control_frame, text=Language.tr('rows'))
@@ -54,6 +55,7 @@ class MatrixWidget(ttk.Frame):
         self._create_grid()
 
     def update_language(self):
+        self.title_text = Language.tr(self.title_key)
         self.title_label.config(text=f"{self.title_text}: ")
         self.rows_label.config(text=Language.tr('rows'))
         self.cols_label.config(text=Language.tr('cols'))
@@ -213,7 +215,7 @@ class MatrixWidget(ttk.Frame):
                     f.write(" ".join(row_vals) + "\n")
             return True
         except Exception as e:
-            messagebox.showerror(Language.tr("Save Error"), str(e))
+            messagebox.showerror(Language.tr('save_error'), str(e))
             return False
 
     def load_from_file(self, filename):
@@ -243,7 +245,7 @@ class MatrixWidget(ttk.Frame):
                     self.widgets[(r, c)].insert(0, val)
             return True
         except Exception as e:
-            messagebox.showerror(Language.tr("Load Error"), str(e))
+            messagebox.showerror(Language.tr('load_error'), str(e))
             return False
 
 
@@ -314,7 +316,6 @@ class StepViewer(ttk.Frame):
         self.text.see(tk.END)
 
     def export_to_latex(self, filename=None):
-        """Export the step viewer content as a LaTeX document."""
         content = self.text.get('1.0', tk.END)
         lines = content.split('\n')
 
@@ -332,14 +333,12 @@ class StepViewer(ttk.Frame):
             if not line:
                 continue
 
-            # Handle matrix state lines (from add_matrix formatting)
             if line.startswith('State:'):
                 latex_lines.append(r'\subsection*{State}')
                 in_matrix = True
                 matrix_rows = []
             elif line.startswith('Result:'):
                 if in_matrix:
-                    # Flush matrix
                     if matrix_rows:
                         latex_lines.append(r'\[')
                         latex_lines.append(r'\begin{pmatrix}')
@@ -352,13 +351,11 @@ class StepViewer(ttk.Frame):
                 result_text = line.replace('Result:', '').strip()
                 latex_lines.append(result_text + r'\\')
             elif in_matrix:
-                # Parse matrix row like "  1: 1.0000 2.0000 3.0000"
                 parts = line.split(':')
                 if len(parts) >= 2:
                     nums = parts[1].strip().split()
                     matrix_rows.append(nums)
             else:
-                # Regular step text
                 latex_lines.append(line + r'\\')
 
         if in_matrix and matrix_rows:
@@ -383,9 +380,10 @@ class StepViewer(ttk.Frame):
 class VectorWidget(ttk.Frame):
     MAX_SIZE = 20
 
-    def __init__(self, master=None, title="Vector", size=3):
+    def __init__(self, master=None, title_key="vector_a", size=3):
         super().__init__(master)
-        self.title_text = title
+        self.title_key = title_key
+        self.title_text = Language.tr(title_key)
         self.size = size
         self.entry_width = 8
         self.widgets = []
@@ -394,7 +392,7 @@ class VectorWidget(ttk.Frame):
         self.control_frame = ttk.Frame(self)
         self.control_frame.pack(fill='x', padx=5, pady=5)
 
-        self.title_label = ttk.Label(self.control_frame, text=f"{title}: ")
+        self.title_label = ttk.Label(self.control_frame, text=f"{self.title_text}: ")
         self.title_label.pack(side='left')
 
         self.size_label = ttk.Label(self.control_frame, text=Language.tr('size'))
@@ -432,6 +430,7 @@ class VectorWidget(ttk.Frame):
         self._create_entries()
 
     def update_language(self):
+        self.title_text = Language.tr(self.title_key)
         self.title_label.config(text=f"{self.title_text}: ")
         self.size_label.config(text=Language.tr('size'))
         self.resize_btn.config(text=Language.tr('resize'))
@@ -586,16 +585,16 @@ class VectorOperationsPanel(ttk.Frame):
         top_frame.grid_columnconfigure(1, weight=1)
         top_frame.grid_rowconfigure(0, weight=1)
 
-        self.vec_a = VectorWidget(top_frame, title=Language.tr('vector_a'), size=3)
+        self.vec_a = VectorWidget(top_frame, title_key='vector_a', size=3)
         self.vec_a.grid(row=0, column=0, sticky='nsew', padx=5, pady=5)
 
-        self.vec_b = VectorWidget(top_frame, title=Language.tr('vector_b'), size=3)
+        self.vec_b = VectorWidget(top_frame, title_key='vector_b', size=3)
         self.vec_b.grid(row=0, column=1, sticky='nsew', padx=5, pady=5)
 
-        btn_frame = ttk.LabelFrame(self, text=Language.tr('operations'))
-        btn_frame.grid(row=1, column=0, sticky='ew', padx=5, pady=5)
+        self.btn_frame = ttk.LabelFrame(self, text=Language.tr('operations'))
+        self.btn_frame.grid(row=1, column=0, sticky='ew', padx=5, pady=5)
         for i in range(4):
-            btn_frame.columnconfigure(i, weight=1)
+            self.btn_frame.columnconfigure(i, weight=1)
 
         buttons = [
             ('add', self._on_add),
@@ -613,7 +612,7 @@ class VectorOperationsPanel(ttk.Frame):
             ('scalar_mul_b', lambda: self._on_scalar_mul(self.vec_b)),
         ]
 
-        self._create_buttons(btn_frame, buttons)
+        self._create_buttons(self.btn_frame, buttons)
 
         self.show_steps_var = tk.BooleanVar(value=True)
         ttk.Checkbutton(self, text=Language.tr('show_steps'),
@@ -633,8 +632,8 @@ class VectorOperationsPanel(ttk.Frame):
     def update_language(self):
         self.vec_a.update_language()
         self.vec_b.update_language()
-        btn_frame = self.grid_slaves(row=1, column=0)[0]
-        for child in btn_frame.winfo_children():
+        self.btn_frame.config(text=Language.tr('operations'))
+        for child in self.btn_frame.winfo_children():
             child.destroy()
         buttons = [
             ('add', self._on_add),
@@ -651,7 +650,10 @@ class VectorOperationsPanel(ttk.Frame):
             ('scalar_mul_a', lambda: self._on_scalar_mul(self.vec_a)),
             ('scalar_mul_b', lambda: self._on_scalar_mul(self.vec_b)),
         ]
-        self._create_buttons(btn_frame, buttons)
+        self._create_buttons(self.btn_frame, buttons)
+        for child in self.grid_slaves(row=2, column=0):
+            if isinstance(child, ttk.Checkbutton):
+                child.config(text=Language.tr('show_steps'))
 
     def _show_result(self, result, steps):
         self.step_viewer.clear()
@@ -773,27 +775,22 @@ class SpecialRelationsPanel(ttk.Frame):
         self.engine = engine
         self.step_viewer = step_viewer
 
-        # Vector input frames
         self.input_frame = ttk.LabelFrame(self, text=Language.tr('input_vectors'))
         self.input_frame.pack(fill='x', padx=5, pady=5)
 
-        # Vector 1
         ttk.Label(self.input_frame, text=Language.tr('v1_label')).grid(row=0, column=0, padx=5, pady=2)
         self.v1_entry = ttk.Entry(self.input_frame, width=30)
         self.v1_entry.grid(row=0, column=1, padx=5, pady=2)
         ttk.Label(self.input_frame, text=Language.tr('comma_separated')).grid(row=0, column=2, padx=5)
 
-        # Vector 2
         ttk.Label(self.input_frame, text=Language.tr('v2_label')).grid(row=1, column=0, padx=5, pady=2)
         self.v2_entry = ttk.Entry(self.input_frame, width=30)
         self.v2_entry.grid(row=1, column=1, padx=5, pady=2)
 
-        # Vector 3 (for coplanarity)
         ttk.Label(self.input_frame, text=Language.tr('v3_label')).grid(row=2, column=0, padx=5, pady=2)
         self.v3_entry = ttk.Entry(self.input_frame, width=30)
         self.v3_entry.grid(row=2, column=1, padx=5, pady=2)
 
-        # Parameter for collinearity
         param_frame = ttk.Frame(self)
         param_frame.pack(fill='x', padx=5, pady=5)
         self.param_label = ttk.Label(param_frame, text=Language.tr('parameter_name'))
@@ -801,7 +798,6 @@ class SpecialRelationsPanel(ttk.Frame):
         self.param_var = tk.StringVar(value='λ')
         ttk.Entry(param_frame, textvariable=self.param_var, width=5).pack(side='left')
 
-        # Buttons
         btn_frame = ttk.Frame(self)
         btn_frame.pack(fill='x', padx=5, pady=5)
 
@@ -825,7 +821,6 @@ class SpecialRelationsPanel(ttk.Frame):
 
     def update_language(self):
         self.input_frame.config(text=Language.tr('input_vectors'))
-        # Update labels inside input_frame (they are children of input_frame)
         for child in self.input_frame.winfo_children():
             if isinstance(child, ttk.Label):
                 current = child.cget('text')
@@ -903,17 +898,10 @@ class BasisPanel(ttk.Frame):
         super().__init__(parent)
         self.engine = engine
         self.step_viewer = step_viewer
+        self.transition_matrix = None
 
-        # Vector to decompose
-        self.f1 = ttk.LabelFrame(self, text=Language.tr('vector_to_decompose'))
-        self.f1.pack(fill='x', padx=5, pady=5)
-        self.v_label = ttk.Label(self.f1, text=Language.tr('v_label'))
-        self.v_label.pack(side='left', padx=5)
-        self.v_entry = ttk.Entry(self.f1, width=30)
-        self.v_entry.pack(side='left', padx=5)
-
-        # Basis vectors
-        self.f2 = ttk.LabelFrame(self, text=Language.tr('basis_vectors'))
+        # --- Old Basis ---
+        self.f2 = ttk.LabelFrame(self, text=Language.tr('old_basis'))
         self.f2.pack(fill='x', padx=5, pady=5)
         self.basis_entries = []
         self.basis_labels = []
@@ -925,15 +913,48 @@ class BasisPanel(ttk.Frame):
             entry.grid(row=i, column=1, padx=5, pady=2)
             self.basis_entries.append(entry)
 
-        # Buttons
+        # --- New Basis ---
+        self.f3 = ttk.LabelFrame(self, text=Language.tr('new_basis'))
+        self.f3.pack(fill='x', padx=5, pady=5)
+        self.new_basis_entries = []
+        self.new_basis_labels = []
+        for i in range(3):
+            lbl = ttk.Label(self.f3, text=f"{Language.tr('b_label')}{i+1}:")
+            lbl.grid(row=i, column=0, padx=5, pady=2)
+            self.new_basis_labels.append(lbl)
+            entry = ttk.Entry(self.f3, width=30)
+            entry.grid(row=i, column=1, padx=5, pady=2)
+            self.new_basis_entries.append(entry)
+
+        # --- Buttons ---
         btn_frame = ttk.Frame(self)
         btn_frame.pack(fill='x', padx=5, pady=5)
+
+        # Vector decomposition section
+        self.f1 = ttk.LabelFrame(self, text=Language.tr('vector_to_decompose'))
+        self.f1.pack(fill='x', padx=5, pady=5)
+        self.v_label = ttk.Label(self.f1, text=Language.tr('v_label'))
+        self.v_label.pack(side='left', padx=5)
+        self.v_entry = ttk.Entry(self.f1, width=30)
+        self.v_entry.pack(side='left', padx=5)
+
         self.btn_check = ttk.Button(btn_frame, text=Language.tr('btn_check_basis'),
                                     command=self._check_basis)
         self.btn_check.pack(side='left', padx=2)
         self.btn_decompose = ttk.Button(btn_frame, text=Language.tr('btn_decompose'),
                                         command=self._decompose)
         self.btn_decompose.pack(side='left', padx=2)
+        self.btn_transition = ttk.Button(btn_frame, text=Language.tr('btn_transition'),
+                                         command=self._compute_transition)
+        self.btn_transition.pack(side='left', padx=2)
+
+        # --- Coordinate Converter ---
+        conv_frame = ttk.LabelFrame(self, text=Language.tr('coordinate_converter'))
+        conv_frame.pack(fill='x', padx=5, pady=5)
+        ttk.Label(conv_frame, text=Language.tr('vector_in_old_basis')).grid(row=0, column=0, padx=5)
+        self.old_coords_entry = ttk.Entry(conv_frame, width=20)
+        self.old_coords_entry.grid(row=0, column=1, padx=5)
+        ttk.Button(conv_frame, text=Language.tr('convert'), command=self._convert_coords).grid(row=0, column=2, padx=5)
 
         self.show_steps_var = tk.BooleanVar(value=True)
         self.show_steps_check = ttk.Checkbutton(self, text=Language.tr('show_steps'),
@@ -943,11 +964,15 @@ class BasisPanel(ttk.Frame):
     def update_language(self):
         self.f1.config(text=Language.tr('vector_to_decompose'))
         self.v_label.config(text=Language.tr('v_label'))
-        self.f2.config(text=Language.tr('basis_vectors'))
+        self.f2.config(text=Language.tr('old_basis'))
         for i, lbl in enumerate(self.basis_labels):
+            lbl.config(text=f"{Language.tr('b_label')}{i+1}:")
+        self.f3.config(text=Language.tr('new_basis'))
+        for i, lbl in enumerate(self.new_basis_labels):
             lbl.config(text=f"{Language.tr('b_label')}{i+1}:")
         self.btn_check.config(text=Language.tr('btn_check_basis'))
         self.btn_decompose.config(text=Language.tr('btn_decompose'))
+        self.btn_transition.config(text=Language.tr('btn_transition'))
         self.show_steps_check.config(text=Language.tr('show_steps'))
 
     def _parse_vector(self, entry_str):
@@ -969,6 +994,34 @@ class BasisPanel(ttk.Frame):
             coeffs, steps = self.engine.decompose_vector(
                 v, basis, show_steps=self.show_steps_var.get())
             self._show_result(coeffs, steps, Language.tr('decomposition_result'))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _compute_transition(self):
+        old_basis = [self._parse_vector(e.get()) for e in self.basis_entries]
+        new_basis = [self._parse_vector(e.get()) for e in self.new_basis_entries]
+        try:
+            P, steps = self.engine.change_of_basis_matrix(old_basis, new_basis, show_steps=True)
+            self.transition_matrix = P  # keep it as SymPy Matrix or NumPy array
+            self._show_result(P, steps, Language.tr('transition_matrix'))
+        except Exception as e:
+            self.step_viewer.add_error(str(e))
+
+    def _convert_coords(self):
+        if self.transition_matrix is None:
+            self.step_viewer.add_error(Language.tr('err_no_transition'))
+            return
+        try:
+            parts = self.old_coords_entry.get().strip().split()
+            if self.engine.get_symbolic_mode():
+                old = sp.Matrix([sp.sympify(x) for x in parts])
+                new = self.transition_matrix * old
+            else:
+                old = np.array([float(x) for x in parts])
+                new = self.transition_matrix @ old
+            self.step_viewer.clear()
+            self.step_viewer.add_header(Language.tr('converted_coords'))
+            self.step_viewer.add_result(str(new))
         except Exception as e:
             self.step_viewer.add_error(str(e))
 
@@ -1006,7 +1059,7 @@ class GeometryPanel(ttk.Frame):
             fmt_lbl = ttk.Label(self.f, text=Language.tr('xyz_format'))
             fmt_lbl.grid(row=i, column=2, padx=5)
             if i == 0:
-                self.format_label = fmt_lbl  # keep reference for update
+                self.format_label = fmt_lbl
 
         btn_frame = ttk.Frame(self)
         btn_frame.pack(fill='x', padx=5, pady=5)
@@ -1034,10 +1087,8 @@ class GeometryPanel(ttk.Frame):
         self.btn_volume.config(text=Language.tr('btn_tetrahedron_volume'))
 
     def _parse_point(self, entry_str):
-        """Parse point coordinates from entry string."""
         parts = entry_str.replace(',', ' ').split()
         if self.engine.get_symbolic_mode():
-            # Keep as strings for symbolic parsing by engine
             return [part.strip() for part in parts if part.strip()]
         else:
             return [float(p) for p in parts[:3]]
@@ -1085,7 +1136,6 @@ class GeometryPanel(ttk.Frame):
             self.step_viewer.add_error(str(e))
 
     def _show_result(self, result, steps, title):
-        """Display result and steps in the step viewer."""
         self.step_viewer.clear()
         self.step_viewer.add_header(title)
         if steps:
@@ -1105,21 +1155,18 @@ class GeometryPanel(ttk.Frame):
 
 
 class EigenPanel(ttk.Frame):
-    """Panel for eigenvalues, eigenvectors, and diagonalization."""
     def __init__(self, parent, engine, step_viewer, matrix_widget_getter):
         super().__init__(parent)
         self.engine = engine
         self.step_viewer = step_viewer
         self.get_matrix = matrix_widget_getter
 
-        # Matrix input section
         self.input_frame = ttk.LabelFrame(self, text=Language.tr('input_matrix'))
         self.input_frame.pack(fill='both', expand=True, padx=5, pady=5)
 
-        self.matrix_widget = MatrixWidget(self.input_frame, title=Language.tr('matrix_a'), rows=3, cols=3)
+        self.matrix_widget = MatrixWidget(self.input_frame, title_key='matrix_a', rows=3, cols=3)
         self.matrix_widget.pack(fill='both', expand=True, padx=5, pady=5)
 
-        # Buttons
         btn_frame = ttk.Frame(self)
         btn_frame.pack(fill='x', padx=5, pady=5)
 
@@ -1163,11 +1210,6 @@ class EigenPanel(ttk.Frame):
             self.matrix_widget.set_matrix_data(matrix, symbolic=self.engine.get_symbolic_mode())
 
     def _warn_if_heavy(self, A, operation_name):
-        """
-        Show warning if matrix is large enough to potentially cause performance issues.
-        For symbolic mode, even 3x3 can be extremely slow; threshold = 2.
-        Returns True if user wants to proceed.
-        """
         try:
             if isinstance(A, (list, np.ndarray)):
                 size = len(A)
@@ -1179,9 +1221,6 @@ class EigenPanel(ttk.Frame):
             size = 0
 
         symbolic = self.engine.get_symbolic_mode()
-
-        # Symbolic: warn for any matrix larger than 2x2 (i.e., 3x3 and above)
-        # Numeric: warn for > 50x50
         threshold = 2 if symbolic else 50
 
         if size > threshold:
@@ -1255,7 +1294,6 @@ class EigenPanel(ttk.Frame):
 
 
 class VisualizationPanel(ttk.Frame):
-    """Panel for 3D vector and point visualization."""
     def __init__(self, parent, engine):
         super().__init__(parent)
         self.engine = engine
@@ -1275,7 +1313,6 @@ class VisualizationPanel(ttk.Frame):
         self.btn_clear = ttk.Button(ctrl_frame, text=Language.tr('btn_clear'), command=self._clear)
         self.btn_clear.pack(side='left')
 
-        # Matplotlib figure
         self.fig = Figure(figsize=(5, 4), dpi=100)
         self.ax = self.fig.add_subplot(111, projection='3d')
         self.canvas = FigureCanvasTkAgg(self.fig, self)
@@ -1300,7 +1337,6 @@ class VisualizationPanel(ttk.Frame):
         self.ax.set_ylabel('Y')
         self.ax.set_zlabel('Z')
         self.ax.set_title(Language.tr('vector_plot'))
-        # Draw origin
         self.ax.scatter([0], [0], [0], color='black', s=20)
         self.canvas.draw()
 
@@ -1308,7 +1344,6 @@ class VisualizationPanel(ttk.Frame):
         text = self.vectors_entry.get().strip()
         if not text:
             return
-        # Parse vectors: each vector as "x,y,z" separated by semicolon or newline
         vectors_str = text.replace('\n', ';').split(';')
         vectors = []
         for v_str in vectors_str:
@@ -1317,7 +1352,7 @@ class VisualizationPanel(ttk.Frame):
                 try:
                     vec = [float(p) for p in parts[:3]]
                     if len(vec) == 2:
-                        vec.append(0)  # 2D -> 3D with z=0
+                        vec.append(0)
                     vectors.append(vec)
                 except ValueError:
                     pass
@@ -1328,10 +1363,8 @@ class VisualizationPanel(ttk.Frame):
         for i, v in enumerate(vectors):
             color = colors[i % len(colors)]
             self.ax.quiver(*origin, *v, color=color, arrow_length_ratio=0.1, label=f'v{i+1}')
-            # Label endpoint
             self.ax.text(v[0], v[1], v[2], f'v{i+1}', color=color)
 
-        # Auto scale
         all_coords = [0] + [c for v in vectors for c in v]
         max_val = max(abs(c) for c in all_coords) + 1
         self.ax.set_xlim([-max_val, max_val])
@@ -1384,7 +1417,6 @@ class GramSchmidtPanel(ttk.Frame):
                 vec = [float(p) for p in parts]
                 vectors.append(vec)
             except ValueError:
-                # Try symbolic
                 vectors.append(parts)
 
         try:

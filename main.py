@@ -158,8 +158,8 @@ class MatrixCalculatorApp:
     def _on_symbolic_toggle(self):
         enabled = self.symbolic_var.get()
         self.engine.set_symbolic_mode(enabled)
-        mode = "Symbolic" if enabled else "Numeric"
-        self.status_var.set(f"Mode: {mode}")
+        mode_key = 'symbolic_mode_short' if enabled else 'numeric_mode_short'
+        self.status_var.set(Language.tr('mode_status', mode=Language.tr(mode_key)))
 
     def _create_main_area(self):
         main_paned = ttk.PanedWindow(self.root, orient=tk.HORIZONTAL)
@@ -187,7 +187,7 @@ class MatrixCalculatorApp:
         self.matrix_a = MatrixWidget(self.matrix_tab, Language.tr('matrix_a'), rows=3, cols=3)
         self.matrix_a.pack(fill="both", expand=True, padx=5, pady=5)
 
-        self.slau_separator = ttk.Separator(self.matrix_tab, orient='vertical')
+        self.slae_separator = ttk.Separator(self.matrix_tab, orient='vertical')
 
         self.matrix_b = MatrixWidget(self.matrix_tab, Language.tr('matrix_b'), rows=3, cols=3)
         self.matrix_b.pack(fill="both", expand=True, padx=5, pady=5)
@@ -272,7 +272,7 @@ class MatrixCalculatorApp:
 
         self.matrix_a.update_language()
         self.matrix_b.update_language()
-        self._update_slau_ui()
+        self._update_slae_ui()
         self.step_header.config(text=Language.tr('step_solution'))
 
         current_status = self.status_var.get()
@@ -286,7 +286,7 @@ class MatrixCalculatorApp:
         self.notebook.tab(self.eigen_tab, text=Language.tr('eigen_tab'))
 
         self.notebook.tab(self.gram_schmidt_tab, text=Language.tr('gram_schmidt_tab'))
-        self.notebook.tab(self.viz_tab, text=Language.tr('viz_tab'))
+        self.notebook.tab(self.viz_tab, text=Language.tr('visualization_tab'))
 
         self.special_tab.update_language()
         self.basis_tab.update_language()
@@ -295,16 +295,16 @@ class MatrixCalculatorApp:
         self.gram_schmidt_tab.update_language()
         self.viz_tab.update_language()
 
-    def _update_slau_ui(self):
+    def _update_slae_ui(self):
         op_display = self.operation_var.get()
         if op_display == Language.tr('op_solve'):
-            if not self.slau_separator.winfo_ismapped():
-                self.slau_separator.pack(side='left', fill='y', padx=2, pady=5, before=self.matrix_b)
+            if not self.slae_separator.winfo_ismapped():
+                self.slae_separator.pack(side='left', fill='y', padx=2, pady=5, before=self.matrix_b)
             self.matrix_a.set_title(Language.tr('matrix_a_coeff'))
             self.matrix_b.set_title(Language.tr('matrix_b_rhs'))
         else:
-            if self.slau_separator.winfo_ismapped():
-                self.slau_separator.pack_forget()
+            if self.slae_separator.winfo_ismapped():
+                self.slae_separator.pack_forget()
             self.matrix_a.set_title(Language.tr('matrix_a'))
             self.matrix_b.set_title(Language.tr('matrix_b'))
 
@@ -324,7 +324,7 @@ class MatrixCalculatorApp:
         _, num_matrices, needs_scalar = self.operations[op_display]
         self.scalar_entry.config(state='normal' if needs_scalar else 'disabled')
         self.matrix_b.set_state('normal' if num_matrices == 2 else 'disabled')
-        self._update_slau_ui()
+        self._update_slae_ui()
 
     def _swap_matrices(self):
         try:
